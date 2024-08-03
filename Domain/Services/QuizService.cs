@@ -11,7 +11,25 @@ public class QuizService : IQuizRepository
     {
         _quizRepository = quizRepostiory;
     }
-    
+
+    public async Task<Quiz> StartQuiz(Guid quizId, Guid coupleId, Guid questionId)
+    {
+        Quiz response = await _quizRepository.StartQuiz(quizId, coupleId, questionId);
+        return response;
+    }
+
+    public async Task<Quiz> UpdateStartedQuiz(Guid quizId, string questionPosition, Guid questionId)
+    {
+        Quiz response = await _quizRepository.UpdateStartedQuiz(quizId, questionPosition, questionId);
+        return response;
+    }
+
+    public async Task<Quiz> GetQuizById(Guid id)
+    {
+        Quiz response = await _quizRepository.GetQuizById(id);
+        return response;
+    }
+
     public async Task CreateQuiz(Quiz quiz)
     {
         await _quizRepository.CreateQuiz(quiz);

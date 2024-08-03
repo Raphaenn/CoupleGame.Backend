@@ -42,4 +42,18 @@ public class QuestionController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpGet("/question/random/{topicId}")]
+    public async Task<ActionResult<List<QuestionDto>>> GetRandomQuestion(string topicId)
+    {
+        try
+        {
+            QuestionDto response = await _questionAppService.RandomQuestion(topicId);
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

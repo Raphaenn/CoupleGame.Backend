@@ -69,4 +69,45 @@ public class QuestionAppService : IQuestionAppService
             throw new Exception(message: e.Message);
         }
     }
+
+    public async Task<QuestionDto> RandomQuestion(string topicId)
+    {
+        try
+        {
+            Guid parsedId = Guid.Parse(topicId);
+            List<Question> quests = await _questionRepository.GetQuestionsByTopicId(parsedId);
+
+            List<QuestionDto> questList = new List<QuestionDto>();
+
+            foreach (var q in quests)
+            {
+                QuestionDto question = new QuestionDto
+                {
+                    Id = q.Id.ToString(),
+                    TopicId = q.TopicId.ToString(),
+                    QuestionText = q.QuestionText,
+                    Answer1 = q.Answer1,
+                    Answer2 = q.Answer2,
+                    Answer3 = q.Answer3,
+                    Answer4 = q.Answer4
+                };
+                questList.Add(question);
+            }
+            
+            // Verifica se a lista não está vazia
+            if (questList == null || questList.Count == 0)
+            {
+                throw new InvalidOperationException("A lista de questões está vazia.");
+            }
+
+            Random random = new Random();
+            int randomIndex = random.Next(questList.Count);
+            return questList[randomIndex];
+
+        }
+        catch (Exception e)
+        {
+            throw new Exception(message: e.Message);
+        }
+    }
 }

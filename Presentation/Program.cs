@@ -25,6 +25,9 @@ builder.Services.AddUserService();
 builder.Services.AddCoupleServices();
 builder.Services.AddTopicService();
 builder.Services.AddQuestionServices();
+builder.Services.AddQuestionServices();
+builder.Services.AddQuizServices();
+builder.Services.AddAnswerServices();
 
 var app = builder.Build();
 

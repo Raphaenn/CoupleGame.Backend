@@ -14,6 +14,113 @@ public class QuizAppService : IQuizAppService
         _quizRepository = quizRepository;
     }
 
+    public async Task<QuizDto> Start(string coupleId, string questionId)
+    {
+        try
+        {
+            Guid quizId = Guid.NewGuid();
+            Guid parsedCoupleId = Guid.Parse(coupleId);
+            Guid parsedQuestionId = Guid.Parse(questionId);
+            Quiz getQuiz = await _quizRepository.StartQuiz(quizId, parsedCoupleId, parsedQuestionId);
+            QuizDto response = new QuizDto
+            {
+                CoupleId = getQuiz.CoupleId.ToString(),
+                QuestionId1 = getQuiz.QuestionId1.ToString(),
+                CreatedAt = getQuiz.CreatedAt
+            };
+
+            return response;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(message: "Create quiz error");
+        }
+    }
+
+    // private async Task<QuizDto> GetById(string id)
+    // {
+    //     try
+    //     {
+    //         Guid parsedId = Guid.Parse(id);
+    //         Quiz quiz = await _quizRepository.GetQuizById(parsedId);
+    //         QuizDto parsedQuiz = new QuizDto
+    //         {
+    //             CoupleId = quiz.CoupleId.ToString(),
+    //             QuestionId1 = quiz.QuestionId1.ToString(),
+    //             QuestionId2 = quiz.QuestionId2.ToString(),
+    //             QuestionId3 = quiz.QuestionId3.ToString(),
+    //             QuestionId4 = quiz.QuestionId4.ToString(),
+    //             QuestionId5 = quiz.QuestionId5.ToString(),
+    //             QuestionId6 = quiz.QuestionId6.ToString(),
+    //             CreatedAt = quiz.CreatedAt
+    //         };
+    //
+    //         return parsedQuiz;
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         throw new Exception(e.Message);
+    //     }
+    // }
+
+    public async Task<QuizDto> Update(string quizId, string questionId)
+    {
+        try
+        {
+            Guid parsedQuizId = Guid.Parse(quizId);
+            Guid parsedQuestionId = Guid.Parse(questionId);
+            Quiz getCurrentQuiz = await _quizRepository.GetQuizById(parsedQuizId);
+            string questionPosition;
+
+            string GetPosition(Quiz q)
+            {
+                if (q.QuestionId2 == null)
+                {
+                    questionPosition = "question_id_2";
+                    return questionPosition;
+                }
+                if (q.QuestionId3 == null)
+                {
+                    questionPosition = "question_id_3";
+                    return questionPosition;
+                }
+                if (q.QuestionId4 == null)
+                {
+                    questionPosition = "question_id_4";
+                    return questionPosition;
+                }
+                if (q.QuestionId5 == null)
+                {
+                    questionPosition = "question_id_5";
+                    return questionPosition;
+                }
+                return questionPosition = "question_id_6";;
+            }
+
+            string returnedValue = GetPosition(getCurrentQuiz);
+            
+            Quiz getQuiz = await _quizRepository.UpdateStartedQuiz(parsedQuizId, returnedValue, parsedQuestionId);
+            
+            QuizDto response = new QuizDto
+            {
+                CoupleId = getQuiz.CoupleId.ToString(),
+                QuestionId1 = getQuiz.QuestionId1.ToString(),
+                QuestionId2 = getQuiz.QuestionId2.ToString(),
+                QuestionId3 = getQuiz.QuestionId3.ToString(),
+                QuestionId4 = getQuiz.QuestionId4.ToString(),
+                QuestionId5 = getQuiz.QuestionId5.ToString(),
+                QuestionId6 = getQuiz.QuestionId6.ToString(),
+                CreatedAt = getQuiz.CreatedAt
+            };
+
+            return response;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(message: "Create quiz error");
+        }
+    }
+    
     public async Task CreateNewQuiz(QuizDto quizData)
     {
         try

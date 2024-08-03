@@ -1,10 +1,9 @@
-namespace Domain.Entities;
+namespace Application.Dtos;
 
-public class Answers
+public class AnswerDto
 {
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
-    public Guid QuizId { get; set; }
     public string Answer1 { get; set; } = String.Empty;
     public string? Answer2 { get; set; }
     public string? Answer3 { get; set; }

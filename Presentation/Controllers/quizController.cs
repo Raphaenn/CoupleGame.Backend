@@ -1,3 +1,4 @@
+using Api.Requests;
 using Application.Dtos;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -36,6 +37,36 @@ public class QuizController : ControllerBase
         try
         {
             QuizDto? response = await _quizAppService.GetQuizByCouple(coupleId);
+            
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPost("/quiz/start")]
+    public async Task<ActionResult<QuizDto>> StartNewQuiz([FromBody] StartQuizRequest request)
+    {
+        try
+        {
+            QuizDto? response = await _quizAppService.Start(coupleId: request.CoupleId, questionId: request.QuestionId);
+            
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    [HttpPost("/quiz/update")]
+    public async Task<ActionResult<QuizDto>> UpdateQuiz([FromBody] QuizRequest request)
+    {
+        try
+        {
+            QuizDto? response = await _quizAppService.Update(quizId: request.QuizId, questionId: request.QuestionId);
             
             return Ok(response);
         }
