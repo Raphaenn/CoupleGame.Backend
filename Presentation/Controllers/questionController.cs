@@ -2,7 +2,7 @@ using Application.Dtos;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Api.Controllers;
+namespace Presentation.Controllers;
 
 [ApiController]
 [Route("[controller]/api")]

@@ -14,7 +14,7 @@ public class QuizRepository : IQuizRepository
         _postgresConnection = postgresConnection;
     }
 
-    public async Task<Quiz> StartQuiz(Guid quizId, Guid coupleId, Guid questionId)
+    public async Task<Quiz> StartQuiz(string quizId, string coupleId, string questionId)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -40,7 +40,7 @@ public class QuizRepository : IQuizRepository
         }
     }
 
-    public async Task<Quiz> UpdateStartedQuiz(Guid quizId, string questionPosition, Guid questionId)
+    public async Task<Quiz> UpdateStartedQuiz(string quizId, string questionPosition, string questionId)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -55,7 +55,7 @@ public class QuizRepository : IQuizRepository
                 var reader = await command.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    Guid couple = reader.GetGuid(8);
+                    string couple = reader.GetGuid(8).ToString();
                     Quiz response = new Quiz
                     {
                         Id = quizId,
@@ -70,7 +70,7 @@ public class QuizRepository : IQuizRepository
         }
     }
 
-    public async Task<Quiz> GetQuizById(Guid id)
+    public async Task<Quiz> GetQuizById(string id)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -90,14 +90,14 @@ public class QuizRepository : IQuizRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid quizId = (Guid)reader["id"];
-                    Guid couple = (Guid)reader["couple_id"];
-                    Guid question1 = (Guid)reader["question_id_1"];
-                    Guid? question2 = (Guid)reader["question_id_2"];
-                    Guid? question3 = (Guid)reader["question_id_3"];
-                    Guid? question4 = (Guid)reader["question_id_4"];
-                    Guid? question5 = (Guid)reader["question_id_5"];
-                    Guid? question6 = (Guid)reader["question_id_6"];
+                    string quizId = (string)reader["id"];
+                    string couple = (string)reader["couple_id"];
+                    string question1 = (string)reader["question_id_1"];
+                    string question2 = (string)reader["question_id_2"];
+                    string question3 = (string)reader["question_id_3"];
+                    string question4 = (string)reader["question_id_4"];
+                    string question5 = (string)reader["question_id_5"];
+                    string question6 = (string)reader["question_id_6"];
                     DateTime createdAt = (DateTime)reader["created_at"];
 
                     Quiz response = new Quiz
@@ -143,7 +143,7 @@ public class QuizRepository : IQuizRepository
         }
     }
 
-    public async Task<Quiz?> GetQuizByCoupleId(Guid coupleId)
+    public async Task<Quiz?> GetQuizByCoupleId(string coupleId)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -163,14 +163,14 @@ public class QuizRepository : IQuizRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid quizId = (Guid)reader["id"];
-                    Guid couple = (Guid)reader["couple_id"];
-                    Guid question1 = (Guid)reader["question_id_1"];
-                    Guid question2 = (Guid)reader["question_id_2"];
-                    Guid question3 = (Guid)reader["question_id_3"];
-                    Guid question4 = (Guid)reader["question_id_4"];
-                    Guid question5 = (Guid)reader["question_id_5"];
-                    Guid question6 = (Guid)reader["question_id_6"];
+                    string quizId = (string)reader["id"];
+                    string couple = (string)reader["couple_id"];
+                    string question1 = (string)reader["question_id_1"];
+                    string question2 = (string)reader["question_id_2"];
+                    string question3 = (string)reader["question_id_3"];
+                    string question4 = (string)reader["question_id_4"];
+                    string question5 = (string)reader["question_id_5"];
+                    string question6 = (string)reader["question_id_6"];
                     DateTime createdAt = (DateTime)reader["created_at"];
 
                     Quiz response = new Quiz

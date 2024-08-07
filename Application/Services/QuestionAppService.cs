@@ -18,7 +18,7 @@ public class QuestionAppService : IQuestionAppService
     {
         try
         {
-            Guid parsedId = Guid.Parse(questionId);
+            string parsedId = questionId;
             Question quest = await _questionRepository.GetSingleQuestion(parsedId);
             QuestionDto parsedQuest = new QuestionDto
             {
@@ -43,7 +43,7 @@ public class QuestionAppService : IQuestionAppService
     {
         try
         {
-            Guid parsedId = Guid.Parse(topicId);
+            string parsedId = topicId;
             List<Question> quests = await _questionRepository.GetQuestionsByTopicId(parsedId);
 
             List<QuestionDto> questList = new List<QuestionDto>();
@@ -74,7 +74,7 @@ public class QuestionAppService : IQuestionAppService
     {
         try
         {
-            Guid parsedId = Guid.Parse(topicId);
+            string parsedId = topicId;
             List<Question> quests = await _questionRepository.GetQuestionsByTopicId(parsedId);
 
             List<QuestionDto> questList = new List<QuestionDto>();

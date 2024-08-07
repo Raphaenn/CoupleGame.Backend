@@ -2,9 +2,9 @@
 public class User
 {
     public Guid Id { get; private set; }
-    public string Name { get; private set; } = String.Empty;
-    public string Email { get; private set; } = String.Empty;
-    public string Password { get; private set; } = String.Empty;
+    public string Name { get; private set; }
+    public string Email { get; private set; }
+    public string Password { get; private set; }
     public DateTime BirthDate { get; private set; }
     
     // Construtor sem parâmetros para uso exclusivo do ORM.

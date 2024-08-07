@@ -1,13 +1,13 @@
-namespace Api.Requests;
+namespace Presentation.Requests;
 
 public class InitAnswerRequest
 {
-    public string UserId { get; set; } = String.Empty;
-    public string QuizId { get; set; } = String.Empty;
-    public string Answer { get; set; } = String.Empty;
+    public string UserId { get; set; }
+    public string QuizId { get; set; }
+    public string Answer { get; set; }
 }
 
 public class UpdateAnswerRequest {
-    public string Id { get; set; } = String.Empty;
-    public string Answer { get; set; } = String.Empty;
+    public string Id { get; set; }
+    public string Answer { get; set; }
 }

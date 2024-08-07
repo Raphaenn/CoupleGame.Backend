@@ -12,15 +12,9 @@ public class TopicService : ITopicRepository
         _topicRepository = topicRepository;
     }
 
-    public async Task<Topic?> GetTopicById(Guid id)
+    public async Task<Topic?> GetTopicById(string id)
     {
-        Topic? response = await _topicRepository.GetTopicById(id);
-
-        if (response == null)
-        {
-            return null;
-        }
-        return response;
+        return await _topicRepository.GetTopicById(id);
     }
 
     public async Task<List<Topic>> ListAllTopics()

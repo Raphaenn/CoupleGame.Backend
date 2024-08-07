@@ -14,7 +14,7 @@ public class QuestionRepository : IQuestionRepository
         _postgresConnection = postgresConnection;
     }
 
-    public async Task<Question> GetSingleQuestion(Guid questionId)
+    public async Task<Question> GetSingleQuestion(string questionId)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -29,8 +29,8 @@ public class QuestionRepository : IQuestionRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid id = Guid.Parse(reader["id"].ToString());
-                    Guid topic = Guid.Parse(reader["topic_id"].ToString());
+                    string id = reader["id"].ToString();
+                    string topic = reader["topic_id"].ToString();
                     string question = reader["question"].ToString();
                     string answer1 = reader["answer_1"].ToString();
                     string answer2 = reader["answer_2"].ToString();
@@ -45,7 +45,7 @@ public class QuestionRepository : IQuestionRepository
         throw new Exception(message: "Question not found");
     }
 
-    public async Task<List<Question>> GetQuestionsByTopicId(Guid topicId)
+    public async Task<List<Question>> GetQuestionsByTopicId(string topicId)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -61,8 +61,8 @@ public class QuestionRepository : IQuestionRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid id = Guid.Parse(reader["id"].ToString());
-                    Guid topic = Guid.Parse(reader["topic_id"].ToString());
+                    string id = reader["id"].ToString();
+                    string topic = reader["topic_id"].ToString();
                     string question = reader["question"].ToString();
                     string answer1 = reader["answer_1"].ToString();
                     string answer2 = reader["answer_2"].ToString();

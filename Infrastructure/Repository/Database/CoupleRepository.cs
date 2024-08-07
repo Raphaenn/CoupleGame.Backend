@@ -62,9 +62,9 @@ public class CoupleRepository : ICoupleRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid id = (Guid)reader["id"];
-                    Guid userOne = (Guid)reader["couple_one"];
-                    Guid userTwo = (Guid)reader["couple_two"];
+                    string id = (string)reader["id"];
+                    string userOne = (string)reader["couple_one"];
+                    string userTwo = (string)reader["couple_two"];
                     string type = (string)reader["type"];
                     string status = (string)reader["status"];
                     DateTime createdAt = (DateTime)reader["created_at"];

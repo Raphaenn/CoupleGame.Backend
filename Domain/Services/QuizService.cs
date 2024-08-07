@@ -12,22 +12,19 @@ public class QuizService : IQuizRepository
         _quizRepository = quizRepostiory;
     }
 
-    public async Task<Quiz> StartQuiz(Guid quizId, Guid coupleId, Guid questionId)
+    public async Task<Quiz> StartQuiz(string quizId, string coupleId, string questionId)
     {
-        Quiz response = await _quizRepository.StartQuiz(quizId, coupleId, questionId);
-        return response;
+        return await _quizRepository.StartQuiz(quizId, coupleId, questionId);
     }
 
-    public async Task<Quiz> UpdateStartedQuiz(Guid quizId, string questionPosition, Guid questionId)
+    public async Task<Quiz> UpdateStartedQuiz(string quizId, string questionPosition, string questionId)
     {
-        Quiz response = await _quizRepository.UpdateStartedQuiz(quizId, questionPosition, questionId);
-        return response;
+        return await _quizRepository.UpdateStartedQuiz(quizId, questionPosition, questionId);
     }
 
-    public async Task<Quiz> GetQuizById(Guid id)
+    public async Task<Quiz> GetQuizById(string id)
     {
-        Quiz response = await _quizRepository.GetQuizById(id);
-        return response;
+        return await _quizRepository.GetQuizById(id);
     }
 
     public async Task CreateQuiz(Quiz quiz)
@@ -35,15 +32,8 @@ public class QuizService : IQuizRepository
         await _quizRepository.CreateQuiz(quiz);
     }
 
-    public async Task<Quiz?> GetQuizByCoupleId(Guid coupleId)
+    public async Task<Quiz?> GetQuizByCoupleId(string coupleId)
     {
-        Quiz? response = await _quizRepository.GetQuizByCoupleId(coupleId);
-
-        if (response == null)
-        {
-            return null;
-        }
-
-        return response;
+        return await _quizRepository.GetQuizByCoupleId(coupleId);
     }
 }

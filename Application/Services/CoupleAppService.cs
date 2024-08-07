@@ -24,9 +24,9 @@ public class CoupleAppService : ICoupleAppService
                 throw new Exception(message: "Relationship already exists");
             }
             
-            Guid relationshipId = Guid.NewGuid();
-            Guid userIdOne = Guid.Parse(userOne);
-            Guid userIdTwo = Guid.Parse(userTwo);
+            string relationshipId = Guid.NewGuid().ToString();
+            string userIdOne = userOne;
+            string userIdTwo = userTwo;
             DateTime createdAt = DateTime.Now;
 
             Couple coupleInstance = new Couple(id: relationshipId, coupleOne: userIdOne, coupleTwo: userIdTwo, type: "friendly", status: "active", createdAt: createdAt);

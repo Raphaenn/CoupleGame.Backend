@@ -1,4 +1,4 @@
-namespace Api.Requests;
+namespace Presentation.Requests;
 
 public class UserRequest
 {

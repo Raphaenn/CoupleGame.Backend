@@ -14,17 +14,11 @@ public class CoupleService : ICoupleRepository
 
     public async Task<Couple> CreateCouple(Couple couple)
     {
-        Couple response = await _coupleRepository.CreateCouple(couple);
-        return response;
+        return await _coupleRepository.CreateCouple(couple);
     }
 
     public async Task<Couple?> SearchCoupleRelationship(string userIdOne, string userIdTwo)
     {
-        Couple? response = await _coupleRepository.SearchCoupleRelationship(userIdOne, userIdTwo);
-        if (response == null)
-        {
-            return null;
-        }
-        return response;
+        return await _coupleRepository.SearchCoupleRelationship(userIdOne, userIdTwo);
     }
 }

@@ -35,12 +35,12 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User> SearchUser(string userId)
+    public Task<User> SearchUser(string userId)
     {
         throw new NotImplementedException();
     }
 
-    public async Task UpdateUser(string userId)
+    public Task UpdateUser(string userId)
     {
         throw new NotImplementedException();
     }

@@ -18,7 +18,7 @@ public class TopicAppService : ITopicAppService
     {
         try
         {
-            Guid parsedId = Guid.Parse(id);
+            string parsedId = id;
             Topic? geTopic = await _topicRepository.GetTopicById(parsedId);
 
             if (geTopic == null)
