@@ -4,7 +4,7 @@ using Domain.Interfaces;
 using Domain.Services;
 using Infrastructure.Repository.Database;
 
-namespace Api.Extensions;
+namespace Presentation.Extensions;
 
 public static class AddAnswerCollectionExtensions
 {

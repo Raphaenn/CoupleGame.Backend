@@ -14,7 +14,7 @@ public class TopicRepository : ITopicRepository
         this._postgresConnection = postgresConnection;
     }
 
-    public async Task<Topic?> GetTopicById(Guid id)
+    public async Task<Topic?> GetTopicById(string id)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -33,7 +33,7 @@ public class TopicRepository : ITopicRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid questionId = Guid.Parse(reader["id"].ToString());
+                    string questionId = reader["id"].ToString();
                     string question = reader["question"].ToString() ?? string.Empty;
                     string description = (string)reader["description"];
                     bool status = (bool)reader["status"];
@@ -61,7 +61,7 @@ public class TopicRepository : ITopicRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid questionId = Guid.Parse(reader["id"].ToString());
+                    string questionId = reader["id"].ToString();
                     string topicaName = reader["name"].ToString() ?? string.Empty;
                     string description = (string)reader["description"];
                     bool status = (bool)reader["status"];

@@ -4,13 +4,13 @@ namespace Domain.Interfaces;
 
 public interface IQuizRepository
 {
-    Task<Quiz> StartQuiz(Guid quizId, Guid coupleId, Guid questionId);
+    Task<Quiz> StartQuiz(string quizId, string coupleId, string questionId);
     
-    Task<Quiz> UpdateStartedQuiz(Guid quizId, string questionPosition, Guid questionId);
+    Task<Quiz> UpdateStartedQuiz(string quizId, string questionPosition, string questionId);
 
-    Task<Quiz> GetQuizById(Guid id); 
+    Task<Quiz> GetQuizById(string id); 
     
     Task CreateQuiz(Quiz quiz);
     
-    Task<Quiz?> GetQuizByCoupleId(Guid coupleId);
+    Task<Quiz?> GetQuizByCoupleId(string coupleId);
 }

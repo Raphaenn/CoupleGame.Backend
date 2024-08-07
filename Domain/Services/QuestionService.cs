@@ -12,15 +12,13 @@ public class QuestionService : IQuestionRepository
         _questionRepository = questionRepository;
     }
 
-    public async Task<Question> GetSingleQuestion(Guid questionId)
+    public async Task<Question> GetSingleQuestion(string questionId)
     {
-        Question response = await _questionRepository.GetSingleQuestion(questionId);
-        return response;
+        return await _questionRepository.GetSingleQuestion(questionId);
     }
 
-    public async Task<List<Question>> GetQuestionsByTopicId(Guid topicId)
+    public async Task<List<Question>> GetQuestionsByTopicId(string topicId)
     {
-        List<Question> response = await _questionRepository.GetQuestionsByTopicId(topicId);
-        return response;
+        return await _questionRepository.GetQuestionsByTopicId(topicId);
     }
 }

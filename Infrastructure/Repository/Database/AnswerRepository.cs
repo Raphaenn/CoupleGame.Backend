@@ -14,7 +14,7 @@ public class AnswerRepository : IAnswerRepository
         _postgresConnection = postgresConnection;
     }
 
-    public async Task<Answers> GetAnswer(Guid id)
+    public async Task<Answers> GetAnswer(string id)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -28,9 +28,9 @@ public class AnswerRepository : IAnswerRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid answerId = (Guid)reader["id"];
-                    Guid userId = (Guid)reader["user_id"];
-                    Guid quizId = (Guid)reader["quiz_id"];
+                    string answerId = (string)reader["id"];
+                    string userId = (string)reader["user_id"];
+                    string quizId = (string)reader["quiz_id"];
                     string answer1 = (string)reader["answer_1"];
                     string? answer2 = (string)reader["answer_2"];
                     string? answer3 = (string)reader["answer_3"];
@@ -60,7 +60,7 @@ public class AnswerRepository : IAnswerRepository
         }
     }
 
-    public async Task CreateAnswer(Guid id, Guid userId, Guid quizId, string answer)
+    public async Task CreateAnswer(string id, string userId, string quizId, string answer)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -79,7 +79,7 @@ public class AnswerRepository : IAnswerRepository
         }
     }
 
-    public async Task UpdateAnswer(Guid id, string answerPosition, string answer)
+    public async Task UpdateAnswer(string id, string answerPosition, string answer)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {

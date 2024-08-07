@@ -4,7 +4,7 @@ namespace Domain.Interfaces;
 
 public interface IQuestionRepository
 {
-    Task<Question> GetSingleQuestion(Guid questionId);
+    Task<Question> GetSingleQuestion(string questionId);
 
-    Task<List<Question>> GetQuestionsByTopicId(Guid topicId);
+    Task<List<Question>> GetQuestionsByTopicId(string topicId);
 }

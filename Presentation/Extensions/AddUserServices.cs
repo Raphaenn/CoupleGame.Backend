@@ -5,7 +5,7 @@ using Domain.Services;
 using Infrastructure.Repository.Database;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Api.Extensions;
+namespace Presentation.Extensions;
 public static class UserServiceCollectionExtensions
 {
     public static IServiceCollection AddUserService(this IServiceCollection services)
