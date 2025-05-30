@@ -4,5 +4,7 @@ namespace Application.Interfaces;
 
 public interface ICoupleAppService
 {
-    Task<CoupleDto> CreateRelationship(string userOne, string userTwo);
+    Task<CoupleDto> StartCouple(string userId, string type, string status);
+
+    Task<CoupleDto> AddSecondMember(string coupleId, string userId);
 }

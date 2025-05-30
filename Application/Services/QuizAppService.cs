@@ -27,13 +27,13 @@ public class QuizAppService : IQuizAppService
                 CoupleId = getQuiz.CoupleId.ToString(),
                 QuestionId1 = getQuiz.QuestionId1.ToString(),
                 CreatedAt = getQuiz.CreatedAt
-            };
+            };  
 
             return response;
         }
         catch (Exception e)
         {
-            throw new Exception(message: "Create quiz error");
+            throw new Exception(message: e.Message);
         }
     }
 

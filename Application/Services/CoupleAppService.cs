@@ -14,29 +14,31 @@ public class CoupleAppService : ICoupleAppService
         this._coupleRepository = coupleRepository;
     }
 
-    public async Task<CoupleDto> CreateRelationship(string userOne, string userTwo)
+    public async Task<CoupleDto> StartCouple(string userId, string type, string status)
     {
         try
         {
-            Couple? checkRelationship = await _coupleRepository.SearchCoupleRelationship(userOne, userTwo);
-            if (checkRelationship != null)
+            Guid parsedUserId = Guid.Parse(userId);
+
+            if (!Enum.TryParse<CoupleTypes>(type, out var parsedType))
             {
-                throw new Exception(message: "Relationship already exists");
+                throw new ArgumentException("Invalid couple type");
             }
             
-            Guid relationshipId = Guid.NewGuid();
-            Guid userIdOne = Guid.Parse(userOne);
-            Guid userIdTwo = Guid.Parse(userTwo);
-            DateTime createdAt = DateTime.Now;
+            if (!Enum.TryParse<CoupleStatus>(status, out var parsedStatus))
+            {
+                throw new ArgumentException("Invalid couple status");
+            }
 
-            Couple coupleInstance = new Couple(id: relationshipId, coupleOne: userIdOne, coupleTwo: userIdTwo, type: "friendly", status: "active", createdAt: createdAt);
+            Couple coupleInstance = Couple.CreateCouple(parsedUserId, parsedType, parsedStatus);
 
-            await _coupleRepository.CreateCouple(coupleInstance);
+            await _coupleRepository.StartNewCouple(coupleInstance);
             CoupleDto response = new CoupleDto
             {
-                UserOneId = userOne,
-                UserTwoId = userTwo,
-                CreatedAt = createdAt
+                UserOneId = coupleInstance.CoupleOne.ToString(),
+                UserTwoId = null,
+                Status = coupleInstance.Status.ToString(),
+                Type = coupleInstance.Type.ToString()
             };
 
             return response;
@@ -45,5 +47,10 @@ public class CoupleAppService : ICoupleAppService
         {
             throw new Exception(message: e.Message);
         }
+    }
+
+    public async Task<CoupleDto> AddSecondMember(string coupleId, string userId)
+    {
+        return null;
     }
 }

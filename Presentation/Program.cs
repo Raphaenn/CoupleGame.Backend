@@ -1,10 +1,5 @@
 using Api.Extensions;
-using Application.Interfaces;
-using Application.Services;
-using Domain.Interfaces;
-using Domain.Services;
 using Infrastructure.Data.Connections;
-using Infrastructure.Repository.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +24,17 @@ builder.Services.AddQuestionServices();
 builder.Services.AddQuizServices();
 builder.Services.AddAnswerServices();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -39,6 +45,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors();
 
 app.UseAuthorization();
 

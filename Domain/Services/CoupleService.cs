@@ -12,9 +12,9 @@ public class CoupleService : ICoupleRepository
         _coupleRepository = coupleRepository;
     }
 
-    public async Task<Couple> CreateCouple(Couple couple)
+    public async Task<Couple> StartNewCouple(Couple couple)
     {
-        Couple response = await _coupleRepository.CreateCouple(couple);
+        Couple response = await _coupleRepository.StartNewCouple(couple);
         return response;
     }
 

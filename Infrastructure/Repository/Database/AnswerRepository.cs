@@ -67,11 +67,11 @@ public class AnswerRepository : IAnswerRepository
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "INSERT INTO answers (id, user_ID, quiz_id, answer, created_at) VALUES (@id, @userId, @quizId, @answer, @createdAt)";
+                command.CommandText = "INSERT INTO answers (id, user_id, quiz_id, answer_1, created_at) VALUES (@id, @userId, @quizId, @answer1, @createdAt)";
                 command.Parameters.AddWithValue("@id", id);
-                command.Parameters.AddWithValue("@user_id", userId);
-                command.Parameters.AddWithValue("@quiz_id", quizId);
-                command.Parameters.AddWithValue("@answer_1", answer);
+                command.Parameters.AddWithValue("@userId", userId);
+                command.Parameters.AddWithValue("@quizId", quizId);
+                command.Parameters.AddWithValue("@answer1", answer);
                 command.Parameters.AddWithValue("@createdAt", DateTime.Now);
 
                 await command.ExecuteNonQueryAsync();

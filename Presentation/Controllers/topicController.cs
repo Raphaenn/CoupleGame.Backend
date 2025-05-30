@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("[controller]/api")]
+[Route("[controller]")]
 public class TopicController : ControllerBase
 {
     private readonly ITopicAppService _topicAppService;

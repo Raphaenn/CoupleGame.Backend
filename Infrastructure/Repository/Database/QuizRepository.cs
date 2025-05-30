@@ -21,10 +21,11 @@ public class QuizRepository : IQuizRepository
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "INSERT INTO quiz (id, couple_id, question_id_1) VALUES (@id, @coupleId, @questionId)";
+                command.CommandText = "INSERT INTO quiz (id, couple_id, question_id_1, created_at) VALUES (@id, @coupleId, @questionId, @createdAt)";
                 command.Parameters.AddWithValue("@id", quizId);
                 command.Parameters.AddWithValue("@coupleId", coupleId);
                 command.Parameters.AddWithValue("@questionId", questionId);
+                command.Parameters.AddWithValue("@createdAt", DateTime.Now);
 
                 await command.ExecuteNonQueryAsync();
 

@@ -16,12 +16,12 @@ public class CoupleController : ControllerBase
         _coupleAppService = coupleAppService;
     }
 
-    [HttpPost("/couple/create/")]
+    [HttpPost("/couple/start/")]
     public async Task<ActionResult<CoupleDto?>> CreateCouple([FromBody] CoupleRequest coupleRequest)
     {
         try
         {
-            CoupleDto response = await _coupleAppService.CreateRelationship(userOne: coupleRequest.UserOneId, userTwo: coupleRequest.UserTwoId);
+            CoupleDto response = await _coupleAppService.StartCouple(coupleRequest.UserOneId, coupleRequest.CoupleType, coupleRequest.CoupleStatus);
             return Ok(response);
         }
         catch (Exception e)
@@ -29,4 +29,6 @@ public class CoupleController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    // todo - Add other member to couple
 }

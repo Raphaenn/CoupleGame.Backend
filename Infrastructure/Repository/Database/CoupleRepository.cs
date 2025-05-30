@@ -14,19 +14,18 @@ public class CoupleRepository : ICoupleRepository
         _postgresConnection = postgresConnection;
     }
 
-    public async Task<Couple> CreateCouple(Couple couple)
+    public async Task<Couple> StartNewCouple(Couple couple)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "INSERT INTO couple (id, couple_one, couple_two, type, status, created_at) VALUES (@id, @coupleOne, @coupleTwo, @type, @status, @createdAt)";
+                command.CommandText = "INSERT INTO couple (id, couple_one, type, status, created_at) VALUES (@id, @coupleOne, @type, @status, @createdAt)";
                 command.Parameters.AddWithValue("@id", couple.Id);
                 command.Parameters.AddWithValue("@coupleOne", couple.CoupleOne);
-                command.Parameters.AddWithValue("@coupleTwo", couple.CoupleTwo);
-                command.Parameters.AddWithValue("@type", couple.Type);
-                command.Parameters.AddWithValue("@status", couple.Status);
+                command.Parameters.AddWithValue("@type", couple.Type.ToString());
+                command.Parameters.AddWithValue("@status", couple.Status.ToString());
                 command.Parameters.AddWithValue("@createdAt", couple.CreatedAt);
 
                 await command.ExecuteNonQueryAsync();
@@ -69,8 +68,8 @@ public class CoupleRepository : ICoupleRepository
                     string status = (string)reader["status"];
                     DateTime createdAt = (DateTime)reader["created_at"];
 
-                    Couple couple = new Couple(id: id, coupleOne: userOne, coupleTwo: userTwo, type: type, status: status, createdAt: createdAt);
-                    return couple;
+                    // Couple couple = new Couple(id: id, coupleOne: userOne, coupleTwo: userTwo, type: type, status: status, createdAt: createdAt);
+                    return null;
                 }
 
             }
