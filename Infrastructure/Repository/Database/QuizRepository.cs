@@ -29,19 +29,13 @@ public class QuizRepository : IQuizRepository
 
                 await command.ExecuteNonQueryAsync();
 
-                Quiz response = new Quiz
-                {
-                    Id = quizId,
-                    CoupleId = coupleId,
-                    QuestionId1 = questionId,
-                    CreatedAt = DateTime.Now
-                };
-                return response;
+                Quiz quiz = Quiz.Rehydrate(quizId, coupleId, questionId, null, null, null, null, null, DateTime.Now);
+                return quiz;
             }
         }
     }
 
-    public async Task<Quiz> UpdateStartedQuiz(Guid quizId, string questionPosition, Guid questionId)
+    public async Task<Quiz> UpdateQuiz(Guid quizId, string questionPosition, Guid questionId)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -54,18 +48,18 @@ public class QuizRepository : IQuizRepository
                 command.Parameters.AddWithValue("@questionId", questionId);
 
                 var reader = await command.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
-                {
-                    Guid couple = reader.GetGuid(8);
-                    Quiz response = new Quiz
-                    {
-                        Id = quizId,
-                        CoupleId = couple,
-                        QuestionId1 = questionId,
-                        CreatedAt = DateTime.Now
-                    };
-                    return response;
-                }
+                // while (await reader.ReadAsync())
+                // {
+                //     Guid couple = reader.GetGuid(8);
+                //     Quiz response = new Quiz
+                //     {
+                //         Id = quizId,
+                //         CoupleId = couple,
+                //         QuestionId1 = questionId,
+                //         CreatedAt = DateTime.Now
+                //     };
+                //     return response;
+                // }
             }
             throw new Exception(message: "Query error");
         }
@@ -101,19 +95,19 @@ public class QuizRepository : IQuizRepository
                     Guid? question6 = (Guid)reader["question_id_6"];
                     DateTime createdAt = (DateTime)reader["created_at"];
 
-                    Quiz response = new Quiz
-                    {
-                        Id = quizId,
-                        CoupleId = couple,
-                        QuestionId1 = question1,
-                        QuestionId2 = question2,
-                        QuestionId3 = question3,
-                        QuestionId4 = question4,
-                        QuestionId5 = question5,
-                        QuestionId6 = question6,
-                        CreatedAt = createdAt
-                    };
-                    return response;
+                    // Quiz response = new Quiz
+                    // {
+                    //     Id = quizId,
+                    //     CoupleId = couple,
+                    //     QuestionId1 = question1,
+                    //     QuestionId2 = question2,
+                    //     QuestionId3 = question3,
+                    //     QuestionId4 = question4,
+                    //     QuestionId5 = question5,
+                    //     QuestionId6 = question6,
+                    //     CreatedAt = createdAt
+                    // };
+                    // return response;
                 }
             }
             return null;
@@ -131,12 +125,12 @@ public class QuizRepository : IQuizRepository
 
                 command.Parameters.AddWithValue("@id", quiz.Id);
                 command.Parameters.AddWithValue("@coupleId", quiz.CoupleId);
-                command.Parameters.AddWithValue("@question1", quiz.QuestionId1);
-                command.Parameters.AddWithValue("@question2", quiz.QuestionId2);
-                command.Parameters.AddWithValue("@question3", quiz.QuestionId3);
-                command.Parameters.AddWithValue("@question4", quiz.QuestionId4);
-                command.Parameters.AddWithValue("@question5", quiz.QuestionId5);
-                command.Parameters.AddWithValue("@question6", quiz.QuestionId6);
+                // command.Parameters.AddWithValue("@question1", quiz.QuestionId1);
+                // command.Parameters.AddWithValue("@question2", quiz.QuestionId2);
+                // command.Parameters.AddWithValue("@question3", quiz.QuestionId3);
+                // command.Parameters.AddWithValue("@question4", quiz.QuestionId4);
+                // command.Parameters.AddWithValue("@question5", quiz.QuestionId5);
+                // command.Parameters.AddWithValue("@question6", quiz.QuestionId6);
                 command.Parameters.AddWithValue("@createAt", quiz.CreatedAt);
 
                 await command.ExecuteNonQueryAsync();
@@ -174,19 +168,19 @@ public class QuizRepository : IQuizRepository
                     Guid question6 = (Guid)reader["question_id_6"];
                     DateTime createdAt = (DateTime)reader["created_at"];
 
-                    Quiz response = new Quiz
-                    {
-                        Id = quizId,
-                        CoupleId = couple,
-                        QuestionId1 = question1,
-                        QuestionId2 = question2,
-                        QuestionId3 = question3,
-                        QuestionId4 = question4,
-                        QuestionId5 = question5,
-                        QuestionId6 = question6,
-                        CreatedAt = createdAt
-                    };
-                    return response;
+                    // Quiz response = new Quiz
+                    // {
+                    //     Id = quizId,
+                    //     CoupleId = couple,
+                    //     QuestionId1 = question1,
+                    //     QuestionId2 = question2,
+                    //     QuestionId3 = question3,
+                    //     QuestionId4 = question4,
+                    //     QuestionId5 = question5,
+                    //     QuestionId6 = question6,
+                    //     CreatedAt = createdAt
+                    // };
+                    // return response;
                 }
             }
             return null;

@@ -22,7 +22,7 @@ public class QuizController : ControllerBase
     {
         try
         {
-            await _quizAppService.CreateNewQuiz(request);
+            // await _quizAppService.CreateNewQuiz(request);
             return Ok();
         }
         catch (Exception e)
@@ -36,9 +36,9 @@ public class QuizController : ControllerBase
     {
         try
         {
-            QuizDto? response = await _quizAppService.GetQuizByCouple(coupleId);
+            // QuizDto? response = await _quizAppService.GetQuizByCouple(coupleId);
             
-            return Ok(response);
+            return Ok();
         }
         catch (Exception e)
         {
@@ -51,7 +51,7 @@ public class QuizController : ControllerBase
     {
         try
         {
-            QuizDto? response = await _quizAppService.Start(coupleId: request.CoupleId, questionId: request.QuestionId);
+            QuizDto? response = await _quizAppService.StartQuiz(coupleId: request.CoupleId, questionId: request.QuestionId);
             
             return Ok(response);
         }
@@ -66,7 +66,7 @@ public class QuizController : ControllerBase
     {
         try
         {
-            QuizDto? response = await _quizAppService.Update(quizId: request.QuizId, questionId: request.QuestionId);
+            QuizDto? response = await _quizAppService.UpdateQuiz(quizId: request.QuizId, questionId: request.QuestionId);
             
             return Ok(response);
         }

@@ -2,8 +2,9 @@ namespace Application.Dtos;
 
 public class QuizDto
 {
-    public string CoupleId { get; set; } = String.Empty;
-    public string QuestionId1 { get; set; } = String.Empty;
+    public string QuizId { get; set; }
+    public string CoupleId { get; set; }
+    public string QuestionId1 { get; set; }
     public string? QuestionId2 { get; set; }
     public string? QuestionId3 { get; set; }
     public string? QuestionId4 { get; set; }

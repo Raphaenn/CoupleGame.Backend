@@ -3,24 +3,34 @@ using Domain.Interfaces;
 
 namespace Domain.Services;
 
-public class QuizService : IQuizRepository
+public class QuizService
 {
     private readonly IQuizRepository _quizRepository;
 
-    public QuizService(IQuizRepository quizRepostiory)
+    public QuizService(IQuizRepository quizRepository)
     {
-        _quizRepository = quizRepostiory;
+        _quizRepository = quizRepository;
     }
 
-    public async Task<Quiz> StartQuiz(Guid quizId, Guid coupleId, Guid questionId)
+    public async Task<Quiz> StartQuiz(Guid coupleId, Guid questionId)
     {
-        Quiz response = await _quizRepository.StartQuiz(quizId, coupleId, questionId);
+        // Couples are allowed only one active quiz at a time.
+        Quiz? checkByCouple = await _quizRepository.GetQuizByCoupleId(coupleId);
+
+        if (checkByCouple != null)
+        {
+            throw new Exception("Couples are allowed only one active quiz at a time");
+        }
+
+        Quiz quiz = Quiz.StartQuiz(coupleId, questionId);
+        
+        Quiz response = await _quizRepository.StartQuiz(quiz.Id, quiz.CoupleId, quiz.Question1);
         return response;
     }
 
     public async Task<Quiz> UpdateStartedQuiz(Guid quizId, string questionPosition, Guid questionId)
     {
-        Quiz response = await _quizRepository.UpdateStartedQuiz(quizId, questionPosition, questionId);
+        Quiz response = await _quizRepository.UpdateQuiz(quizId, questionPosition, questionId);
         return response;
     }
 
@@ -30,20 +40,9 @@ public class QuizService : IQuizRepository
         return response;
     }
 
-    public async Task CreateQuiz(Quiz quiz)
-    {
-        await _quizRepository.CreateQuiz(quiz);
-    }
-
     public async Task<Quiz?> GetQuizByCoupleId(Guid coupleId)
     {
         Quiz? response = await _quizRepository.GetQuizByCoupleId(coupleId);
-
-        if (response == null)
-        {
-            return null;
-        }
-
         return response;
     }
 }
