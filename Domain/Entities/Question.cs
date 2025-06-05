@@ -9,8 +9,7 @@ public class Question
     public string Answer2 { get; private set; }
     public string Answer3 { get; private set; }
     public string Answer4 { get; private set; }
-
-
+    
     public Question(
         Guid id,
         Guid topicId,
@@ -29,4 +28,5 @@ public class Question
         this.Answer3 = answer3;
         this.Answer4 = answer4;
     }
+
 }

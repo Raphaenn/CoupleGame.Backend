@@ -7,4 +7,6 @@ public interface ITopicAppService
     Task<TopicDto?> GetTopicById(string id);
 
     Task<List<TopicDto>> ListAllTopics();
+
+    Task<TopicDto> GetQuestionByTopicId(string topicId);
 }

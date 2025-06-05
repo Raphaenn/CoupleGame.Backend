@@ -42,4 +42,18 @@ public class TopicController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("/topic/get-random-question/{id}")]
+    public async Task<ActionResult<TopicDto>> GetRandomQuestionByTopicId([FromRoute] string id)
+    {
+        try
+        {
+            TopicDto response = await _topicAppService.GetQuestionByTopicId(id);
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

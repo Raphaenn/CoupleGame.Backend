@@ -11,6 +11,7 @@ public static class TopicServiceCollectionExtensions
     public static IServiceCollection AddTopicService(this IServiceCollection services)
     {
         services.AddScoped<ITopicRepository, TopicRepository>();
+        services.AddScoped<ITopicRepository, TopicRepository>();
         services.AddScoped<ITopicAppService, TopicAppService>();
         services.AddScoped<TopicService>();
         

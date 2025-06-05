@@ -2,16 +2,19 @@ using Application.Dtos;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Services;
 
 namespace Application.Services;
 
 public class TopicAppService : ITopicAppService
 {
     private readonly ITopicRepository _topicRepository;
+    private readonly TopicService _topicService;
 
-    public TopicAppService(ITopicRepository topicRepository)
+    public TopicAppService(ITopicRepository topicRepository, TopicService topicService)
     {
         this._topicRepository = topicRepository;
+        this._topicService = topicService;
     }
     
     public async Task<TopicDto?> GetTopicById(string id)
@@ -69,5 +72,28 @@ public class TopicAppService : ITopicAppService
         {
             throw new Exception(message: e.Message);
         }
+    }
+
+    public async Task<TopicDto> GetQuestionByTopicId(string topicId)
+    {
+        try
+        {
+            Guid parsedId = Guid.Parse(topicId);
+            (Topic Topic, Question Question) data = await _topicService.GetTopicWithRandomQuestion(parsedId);
+            TopicDto parsedTopic = new TopicDto
+            {
+                Id = data.Topic.Id.ToString(),
+                Name = data.Topic.Name,
+                Description = data.Topic.Description,
+                Status = data.Topic.Status,
+                Questions = data.Question
+            };
+            return parsedTopic;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+        
     }
 }

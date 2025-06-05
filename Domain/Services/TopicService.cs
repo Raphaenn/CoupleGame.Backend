@@ -3,13 +3,15 @@ using Domain.Interfaces;
 
 namespace Domain.Services;
 
-public class TopicService : ITopicRepository
+public class TopicService
 {
     private readonly ITopicRepository _topicRepository;
+    private readonly IQuestionRepository _questionRepository;
 
-    public TopicService(ITopicRepository topicRepository)
+    public TopicService(ITopicRepository topicRepository, IQuestionRepository questionRepository)
     {
         _topicRepository = topicRepository;
+        _questionRepository = questionRepository;
     }
 
     public async Task<Topic?> GetTopicById(Guid id)
@@ -27,5 +29,23 @@ public class TopicService : ITopicRepository
     {
         List<Topic> response = await _topicRepository.ListAllTopics();
         return response;
+    }
+    
+    public async Task<(Topic Topic, Question Question)> GetTopicWithRandomQuestion(Guid topicId)
+    {
+        var topic = await _topicRepository.GetTopicById(topicId);
+        List<Question> questionList = await _questionRepository.GetQuestionsByTopicId(topicId);
+
+        if (topic == null)
+            throw new InvalidOperationException("Topic not found");
+
+        if (!topic.Status)
+            throw new InvalidOperationException("Invalid topic status");
+        
+        questionList.ForEach(q => topic.AddQuestion(q));
+
+        var question = topic.GetRandomQuestion();
+
+        return (topic, question);
     }
 }

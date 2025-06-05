@@ -17,6 +17,21 @@ public class QuizController : ControllerBase
         _quizAppService = quizAppService;
     }
     
+    [HttpPost("/quiz/start")]
+    public async Task<ActionResult<QuizDto>> StartNewQuiz([FromBody] StartQuizRequest request)
+    {
+        try
+        {
+            QuizDto? response = await _quizAppService.StartQuiz(coupleId: request.CoupleId, questionId: request.QuestionId);
+            
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
     [HttpPost("/quiz/create")]
     public async Task<ActionResult<QuizDto>> CreateQuiz([FromBody] QuizDto request)
     {
@@ -39,21 +54,6 @@ public class QuizController : ControllerBase
             // QuizDto? response = await _quizAppService.GetQuizByCouple(coupleId);
             
             return Ok();
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
-    }
-
-    [HttpPost("/quiz/start")]
-    public async Task<ActionResult<QuizDto>> StartNewQuiz([FromBody] StartQuizRequest request)
-    {
-        try
-        {
-            QuizDto? response = await _quizAppService.StartQuiz(coupleId: request.CoupleId, questionId: request.QuestionId);
-            
-            return Ok(response);
         }
         catch (Exception e)
         {

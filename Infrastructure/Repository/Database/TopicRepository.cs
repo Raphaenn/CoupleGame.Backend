@@ -33,12 +33,12 @@ public class TopicRepository : ITopicRepository
 
                 while (await reader.ReadAsync())
                 {
-                    Guid questionId = Guid.Parse(reader["id"].ToString());
-                    string question = reader["question"].ToString() ?? string.Empty;
+                    Guid topicId = Guid.Parse(reader["id"].ToString());
+                    string name = reader["name"].ToString() ?? string.Empty;
                     string description = (string)reader["description"];
                     bool status = (bool)reader["status"];
                     
-                    Topic topicResponse = new Topic(id: questionId, name: question, description: description, status: status);
+                    Topic topicResponse = new Topic(id: topicId, name: name, description: description, status: status);
 
                     return topicResponse;
                 }
@@ -72,5 +72,32 @@ public class TopicRepository : ITopicRepository
                 return topics;
             }
         }
+    }
+
+    public async Task<Topic> GetRandomQuestionByTopic(Guid topicId)
+    {
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM topic WHERE status = true";
+                command.Parameters.AddWithValue("@id", topicId);
+                
+                var reader = await command.ExecuteReaderAsync();
+                
+                while (await reader.ReadAsync())
+                {
+                    Guid questionId = Guid.Parse(reader["id"].ToString() ?? string.Empty);
+                    string topicaName = reader["name"].ToString() ?? string.Empty;
+                    string description = (string)reader["description"];
+                    bool status = (bool)reader["status"];
+                    
+                    Topic topicResponse = new Topic(id: questionId, name: topicaName, description: description, status: status);
+                return topicResponse;
+                };
+            }
+        }
+        return null;
     }
 }
