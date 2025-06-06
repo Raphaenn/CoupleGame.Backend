@@ -28,10 +28,19 @@ public class QuizService
         return response;
     }
 
-    public async Task<Quiz> UpdateStartedQuiz(Guid quizId, string questionPosition, Guid questionId)
+    public async Task<Quiz> UpdateQuizQuestion(Guid quizId, Guid questionId)
     {
-        Quiz response = await _quizRepository.UpdateQuiz(quizId, questionPosition, questionId);
-        return response;
+        Quiz quiz = await _quizRepository.GetQuizById(quizId);
+        
+        if (quiz == null)
+            throw new Exception("Quiz not found");
+
+        bool added = quiz.Update(questionId);
+
+        Console.WriteLine(quiz.Id);
+        await _quizRepository.UpdateQuiz(quiz);
+
+        return added ? quiz : null;
     }
 
     public async Task<Quiz> GetQuizById(Guid id)

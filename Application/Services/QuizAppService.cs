@@ -34,9 +34,36 @@ public class QuizAppService : IQuizAppService
         };
     }
 
-    public async Task<QuizDto> UpdateQuiz(string quizId, string questionId)
+    public async Task<QuizDto?> UpdateQuiz(string quizId, string questionId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            Guid parsedQuizId = Guid.Parse(quizId);
+            Guid parsedQuestionId = Guid.Parse(questionId);
+            Quiz quiz = await _quizService.UpdateQuizQuestion(parsedQuizId, parsedQuestionId);
+
+            if (quiz == null)
+            {
+                return null;
+            }
+
+            return new QuizDto
+            {
+                QuizId = quiz.Id.ToString(),
+                CoupleId = quiz.CoupleId.ToString(),
+                QuestionId1 = quiz.Question1.ToString(),
+                QuestionId2 = quiz.Question2.ToString(),
+                QuestionId3 = quiz.Question3.ToString(),
+                QuestionId4 = quiz.Question4.ToString(),
+                QuestionId5 = quiz.Question5.ToString(),
+                QuestionId6 = quiz.Question6.ToString(),
+                CreatedAt = quiz.CreatedAt
+            };
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
     }
 
     public async Task<QuizDto?> GetQuizByCoupleId(string coupleId)

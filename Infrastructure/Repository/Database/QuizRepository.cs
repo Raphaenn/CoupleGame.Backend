@@ -35,33 +35,27 @@ public class QuizRepository : IQuizRepository
         }
     }
 
-    public async Task<Quiz> UpdateQuiz(Guid quizId, string questionPosition, Guid questionId)
+    public async Task UpdateQuiz(Quiz quiz)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = $"UPDATE quiz SET {questionPosition} = @questionId WHERE id = quizId RETURNING couple_id";
+                command.CommandText = $"UPDATE quiz SET couple_id = @coupleId, question_id_1 = @question1, question_id_2 = @question2, question_id_3 = @question3, question_id_4 = @question4, question_id_5 = @question5, question_id_6 = @question6 WHERE id = @id RETURNING *;";
                 
-                command.Parameters.AddWithValue("@quizId", quizId);
-                command.Parameters.AddWithValue("@questionId", questionId);
+                command.Parameters.AddWithValue("id", quiz.Id);
+                command.Parameters.AddWithValue("coupleId", quiz.CoupleId);
+                command.Parameters.AddWithValue("question1", (object?)quiz.Question1 ?? DBNull.Value);
+                command.Parameters.AddWithValue("question2", (object?)quiz.Question2 ?? DBNull.Value);
+                command.Parameters.AddWithValue("question3", (object?)quiz.Question3 ?? DBNull.Value);
+                command.Parameters.AddWithValue("question4", (object?)quiz.Question4 ?? DBNull.Value);
+                command.Parameters.AddWithValue("question5", (object?)quiz.Question5 ?? DBNull.Value);
+                command.Parameters.AddWithValue("question6", (object?)quiz.Question6 ?? DBNull.Value);
 
-                var reader = await command.ExecuteReaderAsync();
-                // while (await reader.ReadAsync())
-                // {
-                //     Guid couple = reader.GetGuid(8);
-                //     Quiz response = new Quiz
-                //     {
-                //         Id = quizId,
-                //         CoupleId = couple,
-                //         QuestionId1 = questionId,
-                //         CreatedAt = DateTime.Now
-                //     };
-                //     return response;
-                // }
+                await command.ExecuteNonQueryAsync();
+                return;
             }
-            throw new Exception(message: "Query error");
         }
     }
 
@@ -72,7 +66,7 @@ public class QuizRepository : IQuizRepository
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "SELECT * FROM quiz WHERE couple_id = @id";
+                command.CommandText = "SELECT * FROM quiz WHERE id = @id";
 
                 command.Parameters.AddWithValue("@id", id);
 
@@ -88,26 +82,16 @@ public class QuizRepository : IQuizRepository
                     Guid quizId = (Guid)reader["id"];
                     Guid couple = (Guid)reader["couple_id"];
                     Guid question1 = (Guid)reader["question_id_1"];
-                    Guid? question2 = (Guid)reader["question_id_2"];
-                    Guid? question3 = (Guid)reader["question_id_3"];
-                    Guid? question4 = (Guid)reader["question_id_4"];
-                    Guid? question5 = (Guid)reader["question_id_5"];
-                    Guid? question6 = (Guid)reader["question_id_6"];
-                    DateTime createdAt = (DateTime)reader["created_at"];
+                    Guid? question2 = reader["question_id_2"] is DBNull ? null : (Guid)reader["question_id_2"];
+                    Guid? question3 = reader["question_id_3"] is DBNull ? null : (Guid)reader["question_id_3"];
+                    Guid? question4 = reader["question_id_4"] is DBNull ? null : (Guid)reader["question_id_4"];
+                    Guid? question5 = reader["question_id_5"] is DBNull ? null : (Guid)reader["question_id_5"];
+                    Guid? question6 = reader["question_id_6"] is DBNull ? null : (Guid)reader["question_id_6"];
+                    var createdAt = reader.GetDateTime(reader.GetOrdinal("created_at"));
 
-                    // Quiz response = new Quiz
-                    // {
-                    //     Id = quizId,
-                    //     CoupleId = couple,
-                    //     QuestionId1 = question1,
-                    //     QuestionId2 = question2,
-                    //     QuestionId3 = question3,
-                    //     QuestionId4 = question4,
-                    //     QuestionId5 = question5,
-                    //     QuestionId6 = question6,
-                    //     CreatedAt = createdAt
-                    // };
-                    // return response;
+                    Console.WriteLine(question4);
+                    Quiz response = Quiz.Rehydrate(quizId, couple, question1, question2, question3, question4, question5, question6, createdAt);
+                    return response;
                 }
             }
             return null;

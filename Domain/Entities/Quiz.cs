@@ -32,6 +32,16 @@ public class Quiz
 
     public static Quiz Rehydrate(Guid id, Guid coupleId, Guid question1, Guid? question2, Guid? question3, Guid? question4, Guid? question5, Guid? question6, DateTime createdAt)
     {
-        return new Quiz(Guid.NewGuid(), coupleId, question1, question2, question3, question4, question5, question6, DateTime.Now);
+        return new Quiz(id, coupleId, question1, question2, question3, question4, question5, question6, DateTime.Now);
+    }
+
+    public bool Update(Guid? questionId)
+    {
+        if (Question2 == null) { Question2 = questionId; return true; }
+        if (Question3 == null) { Question3 = questionId; return true; }
+        if (Question4 == null) { Question4 = questionId; return true; }
+        if (Question5 == null) { Question5 = questionId; return true; }
+        if (Question6 == null) { Question6 = questionId; return true; }
+        return false;
     }
 }
