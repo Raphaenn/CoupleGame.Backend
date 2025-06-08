@@ -70,4 +70,35 @@ public class QuizAppService : IQuizAppService
     {
         throw new NotImplementedException();
     }
+
+    public async Task<AnswerDto> AnswerQuizQuestion(string userId, string quizId, string answer)
+    {
+        try
+        {
+            Guid parsedUserId = Guid.Parse(userId);
+            Guid parsedQuizId = Guid.Parse(quizId);
+            Answers answers = await _quizService.AnswerAQuizQuest(parsedUserId, parsedQuizId, answer);
+
+            AnswerDto answerDto = new AnswerDto 
+            {
+                Id = answers.Id,
+                UserId = answers.UserId,
+                Answer1 = answers.Answer1,
+                Answer2 = answers.Answer2,
+                Answer3 = answers.Answer3,
+                Answer4 = answers.Answer4,
+                Answer5 = answers.Answer5,
+                Answer6 = answers.Answer6,
+                CreatedAt = answers.CreatedAt
+            };
+
+            Console.WriteLine(answerDto.Answer1);
+
+            return answerDto;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
 }

@@ -9,4 +9,6 @@ public interface IQuizAppService
     Task<QuizDto?> UpdateQuiz(string quizId, string questionId);
 
     Task<QuizDto?> GetQuizByCoupleId(string coupleId);
+
+    Task<AnswerDto> AnswerQuizQuestion(string userId, string quizId, string answer);
 }

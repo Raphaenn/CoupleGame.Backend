@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace Domain.Entities;
 
 public class Quiz
@@ -11,6 +13,9 @@ public class Quiz
     public Guid? Question5 { get; private set; }
     public Guid? Question6 { get; private set; }
     public DateTime CreatedAt { get; private set; }
+    
+    private readonly List<Answers> _answersList = new List<Answers>();
+    public ReadOnlyCollection<Answers> AnswersList => AnswersList.AsReadOnly();
 
     private Quiz(Guid id, Guid coupleId, Guid question1, Guid? question2, Guid? question3, Guid? question4, Guid? question5, Guid? question6, DateTime createdAt)
     {
@@ -43,5 +48,14 @@ public class Quiz
         if (Question5 == null) { Question5 = questionId; return true; }
         if (Question6 == null) { Question6 = questionId; return true; }
         return false;
+    }
+
+    public void AnswerQuizQuestion(Answers answers)
+    {
+        if (answers.Answer1 == null)
+        {
+            throw new ArgumentException("At least one answer must be provided");
+        }
+        _answersList.Add(answers);
     }
 }

@@ -3,7 +3,7 @@ using Domain.Interfaces;
 
 namespace Domain.Services;
 
-public class AnswerService : IAnswerRepository
+public class AnswerService
 {
     private readonly IAnswerRepository _answerRepository;
 

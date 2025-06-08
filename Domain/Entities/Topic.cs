@@ -8,6 +8,10 @@ public class Topic
     public bool Status { get; private set; }
 
     private readonly List<Question> _questionList = new();
+    
+    // deve ser usada fora da entidade Topic, quando você precisar acessar a lista de perguntas associadas ao tópico, mas sem modificá-la diretamente.
+    // var topic = await _topicRepository.GetTopicById(id);
+    // foreach (var question in topic.Questions)
     public IReadOnlyCollection<Question> Questions => _questionList.AsReadOnly();
 
     public Topic(Guid id, string name, string description, bool status)

@@ -75,4 +75,19 @@ public class QuizController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpPost("/quiz/answer-question")]
+    public async Task<ActionResult<QuizDto>> UpdateQuiz([FromBody] QuizAnswerRequest request)
+    {
+        try
+        {
+            AnswerDto answer = await _quizAppService.AnswerQuizQuestion(request.UserId, request.QuizId, request.Answer);
+            
+            return Ok(answer);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

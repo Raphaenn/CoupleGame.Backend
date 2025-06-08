@@ -6,10 +6,12 @@ namespace Domain.Services;
 public class QuizService
 {
     private readonly IQuizRepository _quizRepository;
+    private readonly IAnswerRepository _answerRepository;
 
-    public QuizService(IQuizRepository quizRepository)
+    public QuizService(IQuizRepository quizRepository, IAnswerRepository answerRepository)
     {
         _quizRepository = quizRepository;
+        _answerRepository = answerRepository;
     }
 
     public async Task<Quiz> StartQuiz(Guid coupleId, Guid questionId)
@@ -53,5 +55,19 @@ public class QuizService
     {
         Quiz? response = await _quizRepository.GetQuizByCoupleId(coupleId);
         return response;
+    }
+
+    public async Task<Answers> AnswerAQuizQuest(Guid userId, Guid quizId, string answer)
+    {
+        Answers? getAnswers = await _answerRepository.GetAnswerByQuizId(quizId);
+
+        if (getAnswers != null)
+        {
+            getAnswers.UpdateAnswer(answer);
+            return getAnswers;
+        }
+
+        Answers newAnswers = Answers.StartAnswer(userId, quizId, answer, null, null, null, null, null);
+        return newAnswers;
     }
 }
