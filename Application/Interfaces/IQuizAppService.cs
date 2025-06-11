@@ -10,5 +10,7 @@ public interface IQuizAppService
 
     Task<QuizDto?> GetQuizByCoupleId(string coupleId);
 
+    Task<QuizDto> GetInviteQuiz(string quizId);
+
     Task<AnswerDto> AnswerQuizQuestion(string userId, string quizId, string answer);
 }

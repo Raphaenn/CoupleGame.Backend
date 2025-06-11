@@ -45,6 +45,14 @@ public class Couple
         return new Couple(id: Guid.NewGuid(), coupleOne, null, type, status, createdAt: DateTime.Now);
     }
 
+    public static Couple Rehydrate(Guid id, Guid coupleOne, Guid? coupleTwo, CoupleTypes type, CoupleStatus status, DateTime createdAt)
+    {
+        if (id == Guid.Empty)
+            throw new ArgumentException("Id cannot be empty");
+
+        return new Couple(id, coupleOne, coupleTwo, type, status, createdAt);
+    } 
+
     public void AddMember(Guid userId)
     {
         if (userId == Guid.Empty)

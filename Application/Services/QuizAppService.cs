@@ -71,6 +71,42 @@ public class QuizAppService : IQuizAppService
         throw new NotImplementedException();
     }
 
+    public async Task<QuizDto> GetInviteQuiz(string quizId)
+    {
+        try
+        {
+            Guid parsedQuizId = Guid.Parse(quizId);
+            Quiz quiz = await _quizService.GetQuizById(parsedQuizId);
+            QuizDto parsedQuiz = new QuizDto
+            {
+                QuizId = quiz.Id.ToString(),
+                CoupleId = quiz.CoupleId.ToString(),
+                QuestionId1 = quiz.Question1.ToString(),
+                QuestionId2 = quiz.Question2.ToString(),
+                QuestionId3 = quiz.Question3.ToString(),
+                QuestionId4 = quiz.Question4.ToString(),
+                QuestionId5 = quiz.Question5.ToString(),
+                QuestionId6 = quiz.Question6.ToString(),
+                CreatedAt = quiz.CreatedAt,
+                Questions = quiz.QuestionsList.Select(q => new QuestionDto()
+                {
+                    Id = q.Id.ToString(),
+                    TopicId = q.TopicId.ToString(),
+                    QuestionText = q.QuestionText,
+                    Answer1 = q.Answer1,
+                    Answer2 = q.Answer2,
+                    Answer3 = q.Answer3,
+                    Answer4 = q.Answer4
+                }).ToList()
+            };
+            return parsedQuiz;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
+
     public async Task<AnswerDto> AnswerQuizQuestion(string userId, string quizId, string answer)
     {
         try
@@ -91,8 +127,6 @@ public class QuizAppService : IQuizAppService
                 Answer6 = answers.Answer6,
                 CreatedAt = answers.CreatedAt
             };
-
-            Console.WriteLine(answerDto.Answer1);
 
             return answerDto;
         }

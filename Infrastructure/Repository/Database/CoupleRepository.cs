@@ -35,11 +35,80 @@ public class CoupleRepository : ICoupleRepository
         }
     }
 
+    public async Task AddCoupleMember(Guid coupleId, Guid userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Couple> SearchCoupleById(Guid coupleId)
+    {
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM couples WHERE id = @coupleId";
+                command.Parameters.AddWithValue("@coupleId", coupleId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                if (!reader.HasRows)
+                {
+                    return null;
+                }
+                while (await reader.ReadAsync())
+                {
+                    Guid id = (Guid)reader["id"];
+                    Guid userOne = (Guid)reader["couple_one"];
+                    Guid userTwo = (Guid)reader["couple_two"];
+                    string type = (string)reader["type"];
+                    string status = (string)reader["status"];
+                    DateTime createdAt = (DateTime)reader["created_at"];
+
+                    Enum.TryParse<CoupleTypes>(type, out var parsedType);
+                    Enum.TryParse<CoupleStatus>(type, out var parsedStatus);
+                    Couple couple = Couple.Rehydrate(id, userOne, userTwo, parsedType, parsedStatus, createdAt);
+                    return couple;
+                }
+            }
+            return null;
+        }
+    }
+
+    public async Task<Couple> SearchCoupleByUserId(Guid userId)
+    {
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM couples WHERE user_id = @userId";
+                command.Parameters.AddWithValue("@userId", userId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                if (!reader.HasRows)
+                {
+                    return null;
+                }
+                while (await reader.ReadAsync())
+                {
+                    Guid id = (Guid)reader["id"];
+                    Guid userOne = (Guid)reader["couple_one"];
+                    Guid userTwo = (Guid)reader["couple_two"];
+                    string type = (string)reader["type"];
+                    string status = (string)reader["status"];
+                    DateTime createdAt = (DateTime)reader["created_at"];
+                    return null;
+                }
+            }
+
+            return null;
+        }
+    }
+
     public async Task<Couple?> SearchCoupleRelationship(string userOneId, string userIdTwo)
     {
-        Console.WriteLine(Guid.Parse(userOneId));
-        Console.WriteLine(Guid.Parse(userIdTwo));
-        Console.WriteLine("opa");
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
             await using (var command = new NpgsqlCommand())
@@ -50,13 +119,10 @@ public class CoupleRepository : ICoupleRepository
                 command.Parameters.AddWithValue("@coupleTwo", Guid.Parse(userIdTwo));
 
                 var reader = await command.ExecuteReaderAsync();
-                Console.WriteLine("opa 2");
                 
                 if (!reader.HasRows)
                 {
-                    // Handle the case where there are no rows
-                    Console.WriteLine("returning null");
-                    return null; // or handle accordingly
+                    return null;
                 }
 
                 while (await reader.ReadAsync())

@@ -6,11 +6,13 @@ namespace Domain.Services;
 public class QuizService
 {
     private readonly IQuizRepository _quizRepository;
+    private readonly IQuestionRepository _questionRepository;
     private readonly IAnswerRepository _answerRepository;
 
-    public QuizService(IQuizRepository quizRepository, IAnswerRepository answerRepository)
+    public QuizService(IQuizRepository quizRepository, IQuestionRepository questionRepository, IAnswerRepository answerRepository)
     {
         _quizRepository = quizRepository;
+        _questionRepository = questionRepository;
         _answerRepository = answerRepository;
     }
 
@@ -38,17 +40,38 @@ public class QuizService
             throw new Exception("Quiz not found");
 
         bool added = quiz.Update(questionId);
-
-        Console.WriteLine(quiz.Id);
         await _quizRepository.UpdateQuiz(quiz);
-
         return added ? quiz : null;
     }
 
     public async Task<Quiz> GetQuizById(Guid id)
     {
-        Quiz response = await _quizRepository.GetQuizById(id);
-        return response;
+        Quiz quiz = await _quizRepository.GetQuizById(id);
+        if (new Guid?[] { quiz.Question2, quiz.Question3, quiz.Question4, quiz.Question5, quiz.Question6 }
+            .Any(q => q == null))
+        {
+            throw new Exception("Cannot get incomplete quiz");
+        }
+        
+        List<Guid> questions = new List<Guid>();
+        questions.AddRange(new Guid?[]
+        {
+            quiz.Question1,
+            quiz.Question2,
+            quiz.Question3,
+            quiz.Question4,
+            quiz.Question5,
+            quiz.Question6,
+        }.OfType<Guid>());
+
+        IEnumerable<Task<Question>> data = questions.Select(quest => _questionRepository.GetSingleQuestion(quest));
+        Question[] questionsList = await Task.WhenAll(data);
+
+        foreach (var q in questionsList)
+        {
+            quiz.QuestionsDetails(q);
+        }
+        return quiz;
     }
 
     public async Task<Quiz?> GetQuizByCoupleId(Guid coupleId)

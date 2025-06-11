@@ -16,6 +16,9 @@ public class Quiz
     
     private readonly List<Answers> _answersList = new List<Answers>();
     public ReadOnlyCollection<Answers> AnswersList => AnswersList.AsReadOnly();
+    
+    private readonly List<Question> _questionsList = new List<Question>();
+    public ReadOnlyCollection<Question> QuestionsList => _questionsList.AsReadOnly();
 
     private Quiz(Guid id, Guid coupleId, Guid question1, Guid? question2, Guid? question3, Guid? question4, Guid? question5, Guid? question6, DateTime createdAt)
     {
@@ -57,5 +60,10 @@ public class Quiz
             throw new ArgumentException("At least one answer must be provided");
         }
         _answersList.Add(answers);
+    }
+
+    public void QuestionsDetails(Question question)
+    {
+        _questionsList.Add(question);
     }
 }

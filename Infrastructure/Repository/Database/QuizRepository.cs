@@ -89,7 +89,6 @@ public class QuizRepository : IQuizRepository
                     Guid? question6 = reader["question_id_6"] is DBNull ? null : (Guid)reader["question_id_6"];
                     var createdAt = reader.GetDateTime(reader.GetOrdinal("created_at"));
 
-                    Console.WriteLine(question4);
                     Quiz response = Quiz.Rehydrate(quizId, couple, question1, question2, question3, question4, question5, question6, createdAt);
                     return response;
                 }

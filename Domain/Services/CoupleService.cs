@@ -3,7 +3,7 @@ using Domain.Interfaces;
 
 namespace Domain.Services;
 
-public class CoupleService : ICoupleRepository
+public class CoupleService
 {
     private readonly ICoupleRepository _coupleRepository;
 
@@ -26,5 +26,13 @@ public class CoupleService : ICoupleRepository
             return null;
         }
         return response;
+    }
+
+    public async Task<Couple> AddNewMember(Guid coupleId, Guid userId)
+    {
+        Couple couple = await _coupleRepository.SearchCoupleById(coupleId);
+        couple.AddMember(userId);
+        await _coupleRepository.AddCoupleMember(coupleId, userId);
+        return couple;
     }
 }

@@ -90,4 +90,18 @@ public class QuizController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("/quiz/invited/{id}")]
+    public async Task<ActionResult<QuizDto>> GetInvitedQuiz([FromRoute] string id)
+    {
+        try
+        {
+            QuizDto quiz = await _quizAppService.GetInviteQuiz(id);
+            return quiz;
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }
