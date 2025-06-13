@@ -9,6 +9,7 @@ namespace Api.Controllers;
 [Route("[controller]/api")]
 public class CoupleController : ControllerBase
 {
+    public record IAddCouple(string CoupleId, string UserId);
     private readonly ICoupleAppService _coupleAppService;
 
     public CoupleController(ICoupleAppService coupleAppService)
@@ -29,6 +30,18 @@ public class CoupleController : ControllerBase
             return BadRequest(e.Message);
         }
     }
-    
-    // todo - Add other member to couple
+
+    [HttpPost("/couple/add-member")]
+    public async Task<ActionResult> AddMember([FromBody] IAddCouple body)
+    {
+        try
+        {
+            await _coupleAppService.AddSecondMember(body.CoupleId, body.UserId);
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

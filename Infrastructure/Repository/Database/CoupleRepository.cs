@@ -37,7 +37,18 @@ public class CoupleRepository : ICoupleRepository
 
     public async Task AddCoupleMember(Guid coupleId, Guid userId)
     {
-        throw new NotImplementedException();
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "UPDATE couple SET couple_two = @coupleTwo WHERE id = @id";
+                command.Parameters.AddWithValue("@id", coupleId);
+                command.Parameters.AddWithValue("@coupleTwo", userId);
+
+                await command.ExecuteNonQueryAsync();
+            }
+        }
     }
 
     public async Task<Couple> SearchCoupleById(Guid coupleId)
@@ -47,7 +58,7 @@ public class CoupleRepository : ICoupleRepository
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "SELECT * FROM couples WHERE id = @coupleId";
+                command.CommandText = "SELECT * FROM couple WHERE id = @coupleId";
                 command.Parameters.AddWithValue("@coupleId", coupleId);
 
                 var reader = await command.ExecuteReaderAsync();
@@ -60,13 +71,13 @@ public class CoupleRepository : ICoupleRepository
                 {
                     Guid id = (Guid)reader["id"];
                     Guid userOne = (Guid)reader["couple_one"];
-                    Guid userTwo = (Guid)reader["couple_two"];
+                    Guid? userTwo = reader["couple_two"] is DBNull ? null : (Guid)reader["couple_two"];
                     string type = (string)reader["type"];
                     string status = (string)reader["status"];
                     DateTime createdAt = (DateTime)reader["created_at"];
 
                     Enum.TryParse<CoupleTypes>(type, out var parsedType);
-                    Enum.TryParse<CoupleStatus>(type, out var parsedStatus);
+                    Enum.TryParse<CoupleStatus>(status, out var parsedStatus);
                     Couple couple = Couple.Rehydrate(id, userOne, userTwo, parsedType, parsedStatus, createdAt);
                     return couple;
                 }
@@ -95,7 +106,7 @@ public class CoupleRepository : ICoupleRepository
                 {
                     Guid id = (Guid)reader["id"];
                     Guid userOne = (Guid)reader["couple_one"];
-                    Guid userTwo = (Guid)reader["couple_two"];
+                    Guid? userTwo = reader["couple_two"] is DBNull ? null : (Guid)reader["couple_two"];
                     string type = (string)reader["type"];
                     string status = (string)reader["status"];
                     DateTime createdAt = (DateTime)reader["created_at"];

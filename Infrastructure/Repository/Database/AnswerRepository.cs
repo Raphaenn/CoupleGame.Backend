@@ -60,7 +60,7 @@ public class AnswerRepository : IAnswerRepository
         }
     }
 
-    public async Task<Answers?> GetAnswerByQuizId(Guid id)
+    public async Task<Answers?> GetAnswerByQuizId(Guid? id)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
@@ -127,6 +127,40 @@ public class AnswerRepository : IAnswerRepository
 
                 await command.ExecuteNonQueryAsync();
             }
+        }
+    }
+
+    public async Task<Answers> GetAnswersByUserId(Guid id)
+    {
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM answers WHERE quiz_id = @id";
+                
+                command.Parameters.AddWithValue("@id", id);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    Guid answerId = (Guid)reader["id"];
+                    Guid userId = (Guid)reader["user_id"];
+                    Guid quizId = (Guid)reader["quiz_id"];
+                    string answer1 = (string)reader["answer_1"];
+                    string answer2 = (string)reader["answer_2"];
+                    string answer3 = (string)reader["answer_3"];
+                    string answer4 = (string)reader["answer_4"];
+                    string answer5 = (string)reader["answer_5"];
+                    string answer6 = (string)reader["answer_6"];
+                    DateTime createdAt = (DateTime)reader["created_at"];
+
+                    Answers answer = Answers.Rehydrate(answerId, userId, quizId, answer1, answer2, answer3, answer4, answer5, answer6, createdAt);
+                    return answer;
+                }
+            }
+            return null;
         }
     }
 }

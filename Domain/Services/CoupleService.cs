@@ -28,11 +28,14 @@ public class CoupleService
         return response;
     }
 
-    public async Task<Couple> AddNewMember(Guid coupleId, Guid userId)
+    public async Task AddNewMember(Guid coupleId, Guid userId)
     {
         Couple couple = await _coupleRepository.SearchCoupleById(coupleId);
+        if (couple == null)
+        {
+            throw new Exception("Wrong couple id");
+        }
         couple.AddMember(userId);
         await _coupleRepository.AddCoupleMember(coupleId, userId);
-        return couple;
     }
 }

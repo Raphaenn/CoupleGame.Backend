@@ -6,9 +6,11 @@ public interface IAnswerRepository
 {
     Task<Answers> GetAnswer(Guid id);
     
-    Task<Answers?> GetAnswerByQuizId(Guid quizId);
+    Task<Answers> GetAnswerByQuizId(Guid? quizId);
     
     Task CreateAnswer(Guid id, Guid userId, Guid quizId, string answer);
 
     Task UpdateAnswer(Guid id, string answerPosition, string answer);
+
+    Task<Answers> GetAnswersByUserId(Guid userId);
 }

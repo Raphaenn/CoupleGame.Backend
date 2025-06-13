@@ -2,16 +2,17 @@ using Application.Dtos;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Interfaces;
+using Domain.Services;
 
 namespace Application.Services;
 
 public class CoupleAppService : ICoupleAppService
 {
-    private readonly ICoupleRepository _coupleRepository;
+    private readonly CoupleService _coupleService;
 
-    public CoupleAppService(ICoupleRepository coupleRepository)
+    public CoupleAppService(CoupleService coupleService)
     {
-        this._coupleRepository = coupleRepository;
+        this._coupleService = coupleService;
     }
 
     public async Task<CoupleDto> StartCouple(string userId, string type, string status)
@@ -32,7 +33,7 @@ public class CoupleAppService : ICoupleAppService
 
             Couple coupleInstance = Couple.CreateCouple(parsedUserId, parsedType, parsedStatus);
 
-            await _coupleRepository.StartNewCouple(coupleInstance);
+            await _coupleService.StartNewCouple(coupleInstance);
             CoupleDto response = new CoupleDto
             {
                 UserOneId = coupleInstance.CoupleOne.ToString(),
@@ -49,8 +50,18 @@ public class CoupleAppService : ICoupleAppService
         }
     }
 
-    public async Task<CoupleDto> AddSecondMember(string coupleId, string userId)
+    public async Task AddSecondMember(string coupleId, string userId)
     {
-        return null;
+        try
+        {
+            Guid parsedCoupleId = Guid.Parse(coupleId);
+            Guid parsedUserId = Guid.Parse(userId);
+            await _coupleService.AddNewMember(parsedCoupleId, parsedUserId);
+            return;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
     }
 }

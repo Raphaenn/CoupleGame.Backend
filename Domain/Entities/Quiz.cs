@@ -2,6 +2,13 @@ using System.Collections.ObjectModel;
 
 namespace Domain.Entities;
 
+public enum QuizStatus
+{
+    Active,
+    Pending,
+    Done
+}
+
 public class Quiz
 {
     public Guid Id { get; private set; }
@@ -12,10 +19,11 @@ public class Quiz
     public Guid? Question4 { get; private set; }
     public Guid? Question5 { get; private set; }
     public Guid? Question6 { get; private set; }
+    public QuizStatus Status { get; private set; } = QuizStatus.Active;
     public DateTime CreatedAt { get; private set; }
     
     private readonly List<Answers> _answersList = new List<Answers>();
-    public ReadOnlyCollection<Answers> AnswersList => AnswersList.AsReadOnly();
+    public ReadOnlyCollection<Answers> AnswersList => _answersList.AsReadOnly();
     
     private readonly List<Question> _questionsList = new List<Question>();
     public ReadOnlyCollection<Question> QuestionsList => _questionsList.AsReadOnly();
@@ -65,5 +73,10 @@ public class Quiz
     public void QuestionsDetails(Question question)
     {
         _questionsList.Add(question);
+    }
+
+    public void AnsweredQuestions(Answers answers)
+    {
+        _answersList.Add(answers);
     }
 }

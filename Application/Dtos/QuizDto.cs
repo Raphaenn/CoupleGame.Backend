@@ -13,4 +13,5 @@ public class QuizDto
     public DateTime CreatedAt { get; set; }
     
     public List<QuestionDto> Questions { get; set; } = new List<QuestionDto>();
+    public IEnumerable<AnswerDto> Answer { get; set; } = new List<AnswerDto>();
 }

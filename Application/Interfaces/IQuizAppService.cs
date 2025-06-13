@@ -13,4 +13,6 @@ public interface IQuizAppService
     Task<QuizDto> GetInviteQuiz(string quizId);
 
     Task<AnswerDto> AnswerQuizQuestion(string userId, string quizId, string answer);
+
+    Task<QuizDto> CompletedQuiz(string quizId);
 }

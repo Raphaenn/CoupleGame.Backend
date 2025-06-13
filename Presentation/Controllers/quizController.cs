@@ -104,4 +104,17 @@ public class QuizController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("/quiz/completed/{id}")]
+    public async Task<ActionResult<QuizDto>> GetCompletedQuiz([FromRoute] string id)
+    {
+        try
+        {
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

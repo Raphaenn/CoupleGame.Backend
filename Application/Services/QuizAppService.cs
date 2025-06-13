@@ -135,4 +135,54 @@ public class QuizAppService : IQuizAppService
             throw new Exception(e.Message);
         }
     }
+
+    public async Task<QuizDto> CompletedQuiz(string quizId)
+    {
+        try
+        {
+            Guid parsedId = Guid.Parse(quizId);
+            Quiz quiz = await _quizService.GetCompletedQuiz(parsedId);
+            
+            QuizDto parsedQuiz = new QuizDto
+            {
+                QuizId = quiz.Id.ToString(),
+                CoupleId = quiz.CoupleId.ToString(),
+                QuestionId1 = quiz.Question1.ToString(),
+                QuestionId2 = quiz.Question2.ToString(),
+                QuestionId3 = quiz.Question3.ToString(),
+                QuestionId4 = quiz.Question4.ToString(),
+                QuestionId5 = quiz.Question5.ToString(),
+                QuestionId6 = quiz.Question6.ToString(),
+                CreatedAt = quiz.CreatedAt,
+                Questions = quiz.QuestionsList.Select(q => new QuestionDto()
+                {
+                    Id = q.Id.ToString(),
+                    TopicId = q.TopicId.ToString(),
+                    QuestionText = q.QuestionText,
+                    Answer1 = q.Answer1,
+                    Answer2 = q.Answer2,
+                    Answer3 = q.Answer3,
+                    Answer4 = q.Answer4
+                }).ToList(),
+                Answer = quiz.AnswersList.Select(a => new AnswerDto
+                {
+                    Id = a.Id,
+                    UserId = a.UserId,
+                    Answer1 = a.Answer1,
+                    Answer2 = a.Answer2,
+                    Answer3 = a.Answer3,
+                    Answer4 = a.Answer4,
+                    Answer5 = a.Answer5,
+                    Answer6 = a.Answer6,
+                    CreatedAt = a.CreatedAt
+                })
+            };
+
+            return parsedQuiz;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
 }

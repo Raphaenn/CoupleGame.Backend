@@ -6,5 +6,5 @@ public interface ICoupleAppService
 {
     Task<CoupleDto> StartCouple(string userId, string type, string status);
 
-    Task<CoupleDto> AddSecondMember(string coupleId, string userId);
+    Task AddSecondMember(string coupleId, string userId);
 }
