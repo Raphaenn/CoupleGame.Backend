@@ -60,23 +60,20 @@ public class Quiz
         if (Question6 == null) { Question6 = questionId; return true; }
         return false;
     }
-
-    public void AnswerQuizQuestion(Answers answers)
+    
+    internal void AddQuestion(Question question)
     {
-        if (answers.Answer1 == null)
-        {
-            throw new ArgumentException("At least one answer must be provided");
-        }
-        _answersList.Add(answers);
-    }
+        if (question == null)
+            throw new ArgumentNullException(nameof(question));
 
-    public void QuestionsDetails(Question question)
-    {
         _questionsList.Add(question);
     }
-
-    public void AnsweredQuestions(Answers answers)
+    
+    internal void AddAnswer(Answers answer)
     {
-        _answersList.Add(answers);
+        if (answer == null)
+            throw new ArgumentNullException(nameof(answer));
+
+        _answersList.Add(answer);
     }
 }

@@ -9,12 +9,12 @@ namespace Application.Services;
 public class TopicAppService : ITopicAppService
 {
     private readonly ITopicRepository _topicRepository;
-    private readonly TopicService _topicService;
+    private readonly IQuestionRepository _questionRepository;
 
-    public TopicAppService(ITopicRepository topicRepository, TopicService topicService)
+    public TopicAppService(ITopicRepository topicRepository, IQuestionRepository questionRepository)
     {
         this._topicRepository = topicRepository;
-        this._topicService = topicService;
+        this._questionRepository = questionRepository;
     }
     
     public async Task<TopicDto?> GetTopicById(string id)
@@ -79,14 +79,26 @@ public class TopicAppService : ITopicAppService
         try
         {
             Guid parsedId = Guid.Parse(topicId);
-            (Topic Topic, Question Question) data = await _topicService.GetTopicWithRandomQuestion(parsedId);
+            var topic = await _topicRepository.GetTopicById(parsedId);
+             List<Question> questionList = await _questionRepository.GetQuestionsByTopicId(parsedId);
+
+             if (topic == null)
+                 throw new InvalidOperationException("Topic not found");
+
+             if (!topic.Status)
+                 throw new InvalidOperationException("Invalid topic status");
+             
+             questionList.ForEach(q => topic.AddQuestion(q));
+
+             var question = topic.GetRandomQuestion();
+
             TopicDto parsedTopic = new TopicDto
             {
-                Id = data.Topic.Id.ToString(),
-                Name = data.Topic.Name,
-                Description = data.Topic.Description,
-                Status = data.Topic.Status,
-                Questions = data.Question
+                Id = topic.Id.ToString(),
+                Name = topic.Name,
+                Description = topic.Description,
+                Status = topic.Status,
+                Questions = question
             };
             return parsedTopic;
         }

@@ -3,24 +3,15 @@ using Domain.Interfaces;
 
 namespace Domain.Services;
 
-public class QuestionService : IQuestionRepository
+public class QuestionService
 {
-    private readonly IQuestionRepository _questionRepository;
-
-    public QuestionService(IQuestionRepository questionRepository)
+    public Question GetSingleQuestion(Guid questionId)
     {
-        _questionRepository = questionRepository;
+        throw new NotImplementedException();
     }
 
-    public async Task<Question> GetSingleQuestion(Guid questionId)
+    public List<Question> GetQuestionsByTopicId(Guid topicId)
     {
-        Question response = await _questionRepository.GetSingleQuestion(questionId);
-        return response;
-    }
-
-    public async Task<List<Question>> GetQuestionsByTopicId(Guid topicId)
-    {
-        List<Question> response = await _questionRepository.GetQuestionsByTopicId(topicId);
-        return response;
+        throw new NotImplementedException();
     }
 }

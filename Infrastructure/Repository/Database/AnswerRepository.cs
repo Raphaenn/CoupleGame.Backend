@@ -95,6 +95,11 @@ public class AnswerRepository : IAnswerRepository
         }
     }
 
+    public async Task CreateAnswer(Answers answer)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task CreateAnswer(Guid id, Guid userId, Guid quizId, string answer)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())

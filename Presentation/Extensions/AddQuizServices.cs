@@ -12,7 +12,6 @@ public static class QuizServiceCollectionExtensions
     {
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IQuizAppService, QuizAppService>();
-        services.AddScoped<QuizService>();
         
         return services;
     }

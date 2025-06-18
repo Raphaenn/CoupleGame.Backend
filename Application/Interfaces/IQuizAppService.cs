@@ -15,4 +15,14 @@ public interface IQuizAppService
     Task<AnswerDto> AnswerQuizQuestion(string userId, string quizId, string answer);
 
     Task<QuizDto> CompletedQuiz(string quizId);
+    
+    
+    
+    // Task<Quiz> StartQuiz(Guid quizId, Guid coupleId, Guid questionId);
+    //
+    // Task UpdateQuiz(Quiz quiz);
+    //
+    // Task<Quiz> GetQuizById(Guid id); 
+    //
+    // Task<Quiz?> GetQuizByCoupleId(Guid coupleId);
 }

@@ -5,28 +5,18 @@ namespace Domain.Services;
 
 public class AnswerService
 {
-    private readonly IAnswerRepository _answerRepository;
-
-    public AnswerService(IAnswerRepository answerRepository)
+    public Answers GetAnswer(Guid id)
     {
-        _answerRepository = answerRepository;
+        throw new NotImplementedException();
     }
 
-    public async Task<Answers> GetAnswer(Guid id)
+    public void CreateAnswer(Guid id, Guid userId, Guid quizId, string answer)
     {
-        Answers response = await _answerRepository.GetAnswer(id);
-        return response;
+        throw new NotImplementedException();
     }
 
-    public async Task CreateAnswer(Guid id, Guid userId, Guid quizId, string answer)
+    public void UpdateAnswer(Guid id, string answerPosition, string answer)
     {
-        await _answerRepository.CreateAnswer(id, userId, quizId, answer);
-        return;
-    }
-
-    public async Task UpdateAnswer(Guid id, string answerPosition, string answer)
-    {
-        await _answerRepository.UpdateAnswer(id, answerPosition, answer);
-        return;
+        throw new NotImplementedException();
     }
 }

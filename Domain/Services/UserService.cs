@@ -3,35 +3,10 @@ using Domain.Interfaces;
 
 namespace Domain.Services;
 
-public class UserService : IUserRepository
+public class UserService
 {
-    private readonly IUserRepository _userRepository;
-
-    public UserService (IUserRepository userRepository)
+    public User CreateUser(User user)
     {
-        _userRepository = userRepository;
+        throw new NotImplementedException();
     }
-    
-    public async Task<User> CreateUser(User user)
-    {
-        User response = await _userRepository.CreateUser(user);
-        return response;
-    }
-
-    // public async Task<User> GetUserById(string id)
-    // {
-    //     User user = await _userRepository.SearchUser(id);
-    //     return user;
-    // }
-
-    // public async Task UpdateCustomer(string engineCustomerId, string paymentMethodId)
-    // {
-    //     await _customerRepository.UpdateCustomer(engineCustomerId, paymentMethodId);
-    // }
-    //
-    // public async Task<Customer> SearchCustomerByYoursId(string yoursId)
-    // {
-    //     Customer response = await _customerRepository.SearchCustomerByYoursId(yoursId);
-    //     return response;
-    // }
 }

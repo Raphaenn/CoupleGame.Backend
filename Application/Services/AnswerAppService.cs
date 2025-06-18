@@ -23,10 +23,10 @@ public class AnswerAppService : IAnswerAppService
     {
         try
         {
-            Guid parsedId = Guid.NewGuid();
             Guid parsedUserId = Guid.Parse(userId);
             Guid parsedQuizId = Guid.Parse(quizId);
-            await _answerRepository.CreateAnswer(parsedId, parsedUserId, parsedQuizId, answer);
+            Answers answers = Answers.StartAnswer(parsedUserId, parsedQuizId, answer, null, null, null, null, null);
+            await _answerRepository.CreateAnswer(answers);
         }
         catch (Exception e)
         {

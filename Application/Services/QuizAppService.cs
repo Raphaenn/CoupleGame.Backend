@@ -1,24 +1,39 @@
 using Application.Dtos;
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Interfaces;
 using Domain.Services;
 
 namespace Application.Services;
 
 public class QuizAppService : IQuizAppService
 {
-    private readonly QuizService _quizService;
+    private readonly IQuizRepository _quizRepository;
+    private readonly IQuestionRepository _questionRepository;
+    private readonly IAnswerRepository _answerRepository;
+    private readonly ICoupleRepository _coupleRepository;
 
-    public QuizAppService(QuizService quizService)
+    public QuizAppService(IQuizRepository quizRepository, IQuestionRepository questionRepository, IAnswerRepository answerRepository, ICoupleRepository coupleRepository)
     {
-        _quizService = quizService;
+        _quizRepository = quizRepository;
+        _questionRepository = questionRepository;
+        _answerRepository = answerRepository;
+        _coupleRepository = coupleRepository;
     }
 
     public async Task<QuizDto> StartQuiz(string coupleId, string questionId)
     {
         Guid parsedCoupleId = Guid.Parse(coupleId);
         Guid parsedQuestionId = Guid.Parse(questionId);
-        Quiz quiz = await _quizService.StartQuiz(parsedCoupleId, parsedQuestionId);
+        Quiz? checkByCouple = await _quizRepository.GetQuizByCoupleId(parsedCoupleId);
+
+        if (checkByCouple != null)
+        {
+            throw new Exception("Couples are allowed only one active quiz at a time");
+        }
+
+        Quiz quiz = Quiz.StartQuiz(parsedCoupleId, parsedQuestionId);
+        await _quizRepository.StartQuiz(quiz.Id, quiz.CoupleId, quiz.Question1);
         
         return new QuizDto
         {
@@ -40,14 +55,15 @@ public class QuizAppService : IQuizAppService
         {
             Guid parsedQuizId = Guid.Parse(quizId);
             Guid parsedQuestionId = Guid.Parse(questionId);
-            Quiz quiz = await _quizService.UpdateQuizQuestion(parsedQuizId, parsedQuestionId);
-
+            Quiz quiz = await _quizRepository.GetQuizById(parsedQuizId);
+        
             if (quiz == null)
-            {
-                return null;
-            }
+                throw new Exception("Quiz not found");
 
-            return new QuizDto
+            bool added = quiz.Update(parsedQuestionId);
+            await _quizRepository.UpdateQuiz(quiz);
+
+            QuizDto parsedQuiz = new QuizDto
             {
                 QuizId = quiz.Id.ToString(),
                 CoupleId = quiz.CoupleId.ToString(),
@@ -59,6 +75,7 @@ public class QuizAppService : IQuizAppService
                 QuestionId6 = quiz.Question6.ToString(),
                 CreatedAt = quiz.CreatedAt
             };
+            return added ? parsedQuiz : null;
         }
         catch (Exception e)
         {
@@ -76,7 +93,32 @@ public class QuizAppService : IQuizAppService
         try
         {
             Guid parsedQuizId = Guid.Parse(quizId);
-            Quiz quiz = await _quizService.GetQuizById(parsedQuizId);
+            Quiz quiz = await _quizRepository.GetQuizById(parsedQuizId);
+            if (new Guid?[] { quiz.Question2, quiz.Question3, quiz.Question4, quiz.Question5, quiz.Question6 }
+                .Any(q => q == null))
+            {
+                throw new Exception("Cannot get incomplete quiz");
+            }
+        
+            List<Guid> questions = new List<Guid>();
+            questions.AddRange(new Guid?[]
+            {
+                quiz.Question1,
+                quiz.Question2,
+                quiz.Question3,
+                quiz.Question4,
+                quiz.Question5,
+                quiz.Question6,
+            }.OfType<Guid>());
+
+            IEnumerable<Task<Question>> data = questions.Select(quest => _questionRepository.GetSingleQuestion(quest));
+            Question[] questionsList = await Task.WhenAll(data);
+
+            foreach (var q in questionsList)
+            {
+                QuizService.FillQuestionsDetails(quiz, q);
+            }
+            
             QuizDto parsedQuiz = new QuizDto
             {
                 QuizId = quiz.Id.ToString(),
@@ -113,22 +155,65 @@ public class QuizAppService : IQuizAppService
         {
             Guid parsedUserId = Guid.Parse(userId);
             Guid parsedQuizId = Guid.Parse(quizId);
-            Answers answers = await _quizService.AnswerAQuizQuest(parsedUserId, parsedQuizId, answer);
+            Answers? getAnswers = await _answerRepository.GetAnswerByQuizId(parsedQuizId);
 
-            AnswerDto answerDto = new AnswerDto 
+            if (getAnswers != null)
             {
-                Id = answers.Id,
-                UserId = answers.UserId,
-                Answer1 = answers.Answer1,
-                Answer2 = answers.Answer2,
-                Answer3 = answers.Answer3,
-                Answer4 = answers.Answer4,
-                Answer5 = answers.Answer5,
-                Answer6 = answers.Answer6,
-                CreatedAt = answers.CreatedAt
-            };
+                var answersArray = new[]
+                {
+                    getAnswers.Answer1,
+                    getAnswers.Answer2,
+                    getAnswers.Answer3,
+                    getAnswers.Answer4,
+                    getAnswers.Answer5,
+                    getAnswers.Answer6,
+                };
 
-            return answerDto;
+                int count = answersArray.TakeWhile(a => a != null).Count();
+                string position = "";
+                switch (count)
+                {
+                    case 0: position = "answer1"; break;
+                    case 1: position = "answer2"; break;
+                    case 2: position = "answer3"; break;
+                    case 3: position = "answer4"; break;
+                    case 4: position = "answer5"; break;
+                    case 5: position = "answer6"; break;
+                }
+            
+                getAnswers.UpdateAnswer(answer);
+                await _answerRepository.UpdateAnswer(getAnswers.Id, position, answer);
+                AnswerDto answerDto = new AnswerDto 
+                {
+                    Id = getAnswers.Id,
+                    UserId = getAnswers.UserId,
+                    Answer1 = getAnswers.Answer1,
+                    Answer2 = getAnswers.Answer2,
+                    Answer3 = getAnswers.Answer3,
+                    Answer4 = getAnswers.Answer4,
+                    Answer5 = getAnswers.Answer5,
+                    Answer6 = getAnswers.Answer6,
+                    CreatedAt = getAnswers.CreatedAt
+                };
+                return answerDto;
+            }
+
+            Answers newAnswers = Answers.StartAnswer(parsedUserId, parsedQuizId, answer, null, null, null, null, null);
+            await _answerRepository.CreateAnswer(newAnswers);
+            // return newAnswers;
+            AnswerDto newAnswerDto = new AnswerDto 
+            {
+                Id = newAnswers.Id,
+                UserId = newAnswers.UserId,
+                Answer1 = newAnswers.Answer1,
+                Answer2 = newAnswers.Answer2,
+                Answer3 = newAnswers.Answer3,
+                Answer4 = newAnswers.Answer4,
+                Answer5 = newAnswers.Answer5,
+                Answer6 = newAnswers.Answer6,
+                CreatedAt = newAnswers.CreatedAt
+            };
+            return newAnswerDto;
         }
         catch (Exception e)
         {
@@ -141,7 +226,50 @@ public class QuizAppService : IQuizAppService
         try
         {
             Guid parsedId = Guid.Parse(quizId);
-            Quiz quiz = await _quizService.GetCompletedQuiz(parsedId);
+            Quiz quiz = await _quizRepository.GetQuizById(parsedId);
+        
+            if (new Guid?[] { quiz.Question2, quiz.Question3, quiz.Question4, quiz.Question5, quiz.Question6 }
+                .Any(q => q == null))
+            {
+                throw new Exception("Incomplete quiz");
+            }
+
+            // get questions
+            List<Guid> questions = new List<Guid>();
+            questions.AddRange(new Guid?[]
+            {
+                quiz.Question1,
+                quiz.Question2,
+                quiz.Question3,
+                quiz.Question4,
+                quiz.Question5,
+                quiz.Question6,
+            }.OfType<Guid>());   
+        
+            IEnumerable<Task<Question>> data = questions.Select(quest => _questionRepository.GetSingleQuestion(quest));
+            Question[] questionsList = await Task.WhenAll(data);
+
+            foreach (var q in questionsList)
+            {
+                QuizService.FillQuestionsDetails(quiz, q);
+            }
+        
+            // find couples
+            Couple coupleData = await _coupleRepository.SearchCoupleById(quiz.CoupleId);
+            if (coupleData.CoupleTwo == null)
+            {
+                throw new Exception("Incomplete couple");
+            }
+        
+            // get user answers
+            Task<Answers> firstUserAnswersTask = _answerRepository.GetAnswerByQuizId(coupleData.CoupleOne);
+            Task<Answers> secondUserAnswersTask = _answerRepository.GetAnswerByQuizId(coupleData.CoupleTwo);
+            await Task.WhenAll(firstUserAnswersTask, secondUserAnswersTask);
+            Answers firstUserAnswers = await firstUserAnswersTask;
+            Answers secondUserAnswers = await secondUserAnswersTask;
+        
+            QuizService.AnsweredQuestions(quiz, firstUserAnswers);
+            QuizService.AnsweredQuestions(quiz, secondUserAnswers);
             
             QuizDto parsedQuiz = new QuizDto
             {

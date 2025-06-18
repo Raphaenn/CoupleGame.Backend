@@ -5,37 +5,18 @@ namespace Domain.Services;
 
 public class CoupleService
 {
-    private readonly ICoupleRepository _coupleRepository;
-
-    public CoupleService(ICoupleRepository coupleRepository)
+    public Couple StartNewCouple(Couple couple)
     {
-        _coupleRepository = coupleRepository;
+        throw new NotImplementedException();
     }
 
-    public async Task<Couple> StartNewCouple(Couple couple)
+    public Couple SearchCoupleRelationship(string userIdOne, string userIdTwo)
     {
-        Couple response = await _coupleRepository.StartNewCouple(couple);
-        return response;
+        throw new NotImplementedException();
     }
 
-    public async Task<Couple?> SearchCoupleRelationship(string userIdOne, string userIdTwo)
+    public void AddNewMember(Guid coupleId, Guid userId)
     {
-        Couple? response = await _coupleRepository.SearchCoupleRelationship(userIdOne, userIdTwo);
-        if (response == null)
-        {
-            return null;
-        }
-        return response;
-    }
-
-    public async Task AddNewMember(Guid coupleId, Guid userId)
-    {
-        Couple couple = await _coupleRepository.SearchCoupleById(coupleId);
-        if (couple == null)
-        {
-            throw new Exception("Wrong couple id");
-        }
-        couple.AddMember(userId);
-        await _coupleRepository.AddCoupleMember(coupleId, userId);
+        throw new NotImplementedException();
     }
 }

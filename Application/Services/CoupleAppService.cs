@@ -8,11 +8,11 @@ namespace Application.Services;
 
 public class CoupleAppService : ICoupleAppService
 {
-    private readonly CoupleService _coupleService;
+    private readonly ICoupleRepository _coupleRepository;
 
-    public CoupleAppService(CoupleService coupleService)
+    public CoupleAppService(ICoupleRepository coupleRepository)
     {
-        this._coupleService = coupleService;
+        this._coupleRepository = coupleRepository;
     }
 
     public async Task<CoupleDto> StartCouple(string userId, string type, string status)
@@ -33,7 +33,7 @@ public class CoupleAppService : ICoupleAppService
 
             Couple coupleInstance = Couple.CreateCouple(parsedUserId, parsedType, parsedStatus);
 
-            await _coupleService.StartNewCouple(coupleInstance);
+            await _coupleRepository.StartNewCouple(coupleInstance);
             CoupleDto response = new CoupleDto
             {
                 UserOneId = coupleInstance.CoupleOne.ToString(),
@@ -56,7 +56,13 @@ public class CoupleAppService : ICoupleAppService
         {
             Guid parsedCoupleId = Guid.Parse(coupleId);
             Guid parsedUserId = Guid.Parse(userId);
-            await _coupleService.AddNewMember(parsedCoupleId, parsedUserId);
+            Couple couple = await _coupleRepository.SearchCoupleById(parsedCoupleId);
+            if (couple == null)
+            {
+                throw new Exception("Wrong couple id");
+            }
+            couple.AddMember(parsedUserId);
+            await _coupleRepository.AddCoupleMember(parsedCoupleId, parsedUserId);
             return;
         }
         catch (Exception e)

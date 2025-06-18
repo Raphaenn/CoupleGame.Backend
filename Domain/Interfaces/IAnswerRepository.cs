@@ -8,7 +8,7 @@ public interface IAnswerRepository
     
     Task<Answers> GetAnswerByQuizId(Guid? quizId);
     
-    Task CreateAnswer(Guid id, Guid userId, Guid quizId, string answer);
+    Task CreateAnswer(Answers answer);
 
     Task UpdateAnswer(Guid id, string answerPosition, string answer);
 
