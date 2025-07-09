@@ -33,6 +33,12 @@ ALTER TABLE
     "users" ADD PRIMARY KEY("id");
 ALTER TABLE
     "users" ADD CONSTRAINT "user_email_unique" UNIQUE("email");
+ALTER TABLE "users"
+    ADD COLUMN height NUMERIC(5,2),
+    ADD COLUMN weight NUMERIC(5,2),
+    ADD COLUMN latitude NUMERIC(9,6),
+    ADD COLUMN longitude NUMERIC(9,6);
+
 CREATE TABLE "quiz"(
     "id" UUID NOT NULL,
     "creted_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
@@ -119,3 +125,18 @@ ALTER TABLE
     "questions" ADD CONSTRAINT "questions_topic_id_foreign" FOREIGN KEY("topic_id") REFERENCES "topic"("id");
 ALTER TABLE
     "quiz" ADD CONSTRAINT "quiz_question_id_2_foreign" FOREIGN KEY("question_id_2") REFERENCES "questions"("id");
+
+CREATE TABLE user_preferences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    location VARCHAR(255),
+    distance_km NUMERIC(5,2),
+    gender_preference VARCHAR(10) CHECK (gender_preference IN ('GIRLS', 'BOYS', 'BOTH')),
+    age_min INTEGER,
+    age_max INTEGER,
+    height_min NUMERIC(5,2),
+    height_max NUMERIC(5,2),
+    weight_min NUMERIC(5,2),
+    weight_max NUMERIC(5,2),
+    interests TEXT[]
+);

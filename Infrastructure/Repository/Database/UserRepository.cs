@@ -21,12 +21,14 @@ public class UserRepository : IUserRepository
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "INSERT INTO users (id, name, email, password, birthdate) VALUES (@id, @name, @email, @password, @birthdate)";
+                command.CommandText = "INSERT INTO users (id, name, email, password, birthdate, height, weight) VALUES (@id, @name, @email, @password, @birthdate, @height, @weight)";
                 command.Parameters.AddWithValue("@id", userData.Id);
                 command.Parameters.AddWithValue("@name", userData.Name);
                 command.Parameters.AddWithValue("@email", userData.Email);
                 command.Parameters.AddWithValue("@password", userData.Password);
                 command.Parameters.AddWithValue("@birthdate", userData.BirthDate);
+                command.Parameters.AddWithValue("@height", userData.Height);
+                command.Parameters.AddWithValue("@weight", userData.Weight);
 
                 await command.ExecuteNonQueryAsync();
 

@@ -7,4 +7,6 @@ public class UserDto
     public string Email { get; set; } = String.Empty;
     public string Password { get; set; } = String.Empty;
     public DateTime Birthdate { get; set; }
+    public double Height  { get; set; }
+    public double Weight   { get; set; }
 }

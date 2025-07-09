@@ -26,7 +26,9 @@ public class UserController : ControllerBase
             Name = user.Nome,
             Email = user.Email,
             Password = user.Senha,
-            Birthdate = user.DataNascimento
+            Birthdate = user.DataNascimento,
+            Height = user.Altura,
+            Weight = user.Peso,
          };
 
          UserDto createdUser = await _userAppService.CreateUser(userRequest);
