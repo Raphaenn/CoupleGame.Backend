@@ -6,7 +6,7 @@ public interface IInviteRepository
 {
     Task CreateInvite(Invite invite);
 
-    Task<Invite> GetInviteByEmail(Guid quizId, string email);
+    Task<Invite?> GetInviteByQuizEmail(Guid quizId, string email);
     
     Task<Invite?> GetInviteById(Guid id);
 

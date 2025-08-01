@@ -36,9 +36,39 @@ public class InviteRepository : IInviteRepository
         }
     }
 
-    public async Task<Invite> GetInviteByEmail(Guid quizId, string email)
+    public async Task<Invite?> GetInviteByQuizEmail(Guid quizId, string email)
     {
-        throw new NotImplementedException();
+        await using (var connection = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = connection;
+                command.CommandText = "SELECT * FROM invite WHERE email = @email AND quiz_id = @quizId";
+                
+                command.Parameters.AddWithValue("email", email);
+                command.Parameters.AddWithValue("quizId", quizId);
+
+                var reader = await command.ExecuteReaderAsync();
+                
+                if (!reader.HasRows)
+                {
+                    return null;
+                }
+                while (await reader.ReadAsync())
+                {
+                    Guid inviteId = (Guid)reader["id"];
+                    Guid quiz = (Guid)reader["quiz_id"];
+                    Guid hostId = (Guid)reader["host_user_id"];
+                    string mail = (string)reader["email"];
+                    bool accepted = (bool)reader["accepted"];
+                    
+                    Invite res = Invite.Rehydrate(inviteId, quiz, hostId, mail, accepted);
+
+                    return res;
+                }
+            }
+            return null;
+        }
     }
 
     public async Task<Invite?> GetInviteById(Guid id)

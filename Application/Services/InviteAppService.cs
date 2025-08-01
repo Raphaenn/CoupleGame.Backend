@@ -27,6 +27,7 @@ public class InviteAppService : IInviteAppService
             {
                 Id = data.Id.ToString(),
                 QuizId = data.QuizId.ToString(),
+                HostId = data.HostId.ToString(),
                 Email = data.Email,
                 Accepted = data.Accepted,
                 CreatedAt = data.CreatedAt
@@ -40,9 +41,34 @@ public class InviteAppService : IInviteAppService
         }
     }
 
-    public async Task GetInviteService(string quizId, string email)
+    public async Task<InviteDto?> GetInviteByQuizEmail(string quizId, string email)
     {
-        throw new NotImplementedException();
+        try
+        {
+            Guid parsedQuizId = Guid.Parse(quizId);
+            Invite? invite = await _inviteRepository.GetInviteByQuizEmail(parsedQuizId, email);
+
+            if (invite == null)
+            {
+                return null;
+            }
+
+            InviteDto parsedInvite = new InviteDto
+            {
+                Id = invite.Id.ToString(),
+                QuizId = invite.QuizId.ToString(),
+                HostId = invite.HostId.ToString(),
+                Email = invite.Email,
+                Accepted = invite.Accepted,
+                CreatedAt = invite.CreatedAt
+            };
+            
+            return parsedInvite;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
     }
 
     public async Task AcceptInvite(string id)
