@@ -72,16 +72,13 @@ public class QuestionAppService : IQuestionAppService
         }
     }
 
-    public async Task<QuestionDto> RandomQuestion(string topicId, string quizId)
+    public async Task<QuestionDto> RandomQuestion(string topicId, string? quizId)
     {
         try
         {
             Guid parsedId = Guid.Parse(topicId);
-            Guid parsedQuizId = Guid.Parse(quizId);
             List<Question> quests = await _questionRepository.GetQuestionsByTopicId(parsedId);
             
-            Quiz quiz = await _quizRepository.GetQuizById(parsedQuizId);
-
             List<QuestionDto> questList = new List<QuestionDto>();
 
             foreach (var q in quests)
@@ -108,14 +105,20 @@ public class QuestionAppService : IQuestionAppService
             Random random = new Random();
             int randomIndex = random.Next(questList.Count);
 
-            var check = Quiz.QuizContainsQuestion(quiz, questList[randomIndex].Id);
-
-            if (!check)
+            if (quizId != null)
             {
-                return questList[randomIndex];
+                Guid parsedQuizId = Guid.Parse(quizId);
+                Quiz quiz = await _quizRepository.GetQuizById(parsedQuizId);
+                var check = Quiz.QuizContainsQuestion(quiz, questList[randomIndex].Id);
+                
+                if (!check)
+                {
+                    return questList[randomIndex];
+                }
+                
+                return questList[randomIndex + 1];
             }
-            
-            return questList[randomIndex + 1];
+            return questList[randomIndex];
         }
         catch (Exception e)
         {
