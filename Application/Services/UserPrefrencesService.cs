@@ -5,11 +5,11 @@ using Domain.Interfaces;
 
 namespace Application.Services;
 
-public class UserPrefrencesService : IUserPrefrencesService
+public class UserPreferencesAppService : IUserPreferencesAppService
 {
     private readonly IUserPreferencesRepository _userPreferencesRepository;
     
-    public UserPrefrencesService(IUserPreferencesRepository userPreferencesRepository)
+    public UserPreferencesAppService(IUserPreferencesRepository userPreferencesRepository)
     {
         _userPreferencesRepository = userPreferencesRepository;
     }

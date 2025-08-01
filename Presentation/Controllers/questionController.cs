@@ -44,11 +44,11 @@ public class QuestionController : ControllerBase
     }
     
     [HttpGet("/question/random/{topicId}")]
-    public async Task<ActionResult<List<QuestionDto>>> GetRandomQuestion(string topicId)
+    public async Task<ActionResult<List<QuestionDto>>> GetRandomQuestion([FromRoute] string topicId, [FromQuery] string quizId)
     {
         try
         {
-            QuestionDto response = await _questionAppService.RandomQuestion(topicId);
+            QuestionDto response = await _questionAppService.RandomQuestion(topicId, quizId);
             return Ok(response);
         }
         catch (Exception e)

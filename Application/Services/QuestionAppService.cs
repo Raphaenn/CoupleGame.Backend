@@ -8,10 +8,12 @@ namespace Application.Services;
 public class QuestionAppService : IQuestionAppService
 {
     private readonly IQuestionRepository _questionRepository;
+    private readonly IQuizRepository _quizRepository;
 
-    public QuestionAppService(IQuestionRepository questionRepository)
+    public QuestionAppService(IQuestionRepository questionRepository, IQuizRepository quizRepository)
     {
         _questionRepository = questionRepository;
+        _quizRepository = quizRepository;
     }
     
     public async Task<QuestionDto> GetQuestion(string questionId)
@@ -70,12 +72,15 @@ public class QuestionAppService : IQuestionAppService
         }
     }
 
-    public async Task<QuestionDto> RandomQuestion(string topicId)
+    public async Task<QuestionDto> RandomQuestion(string topicId, string quizId)
     {
         try
         {
             Guid parsedId = Guid.Parse(topicId);
+            Guid parsedQuizId = Guid.Parse(quizId);
             List<Question> quests = await _questionRepository.GetQuestionsByTopicId(parsedId);
+            
+            Quiz quiz = await _quizRepository.GetQuizById(parsedQuizId);
 
             List<QuestionDto> questList = new List<QuestionDto>();
 
@@ -97,13 +102,20 @@ public class QuestionAppService : IQuestionAppService
             // Verifica se a lista não está vazia
             if (questList == null || questList.Count == 0)
             {
-                throw new InvalidOperationException("A lista de questões está vazia.");
+                throw new InvalidOperationException("Invalid question list");
             }
 
             Random random = new Random();
             int randomIndex = random.Next(questList.Count);
-            return questList[randomIndex];
 
+            var check = Quiz.QuizContainsQuestion(quiz, questList[randomIndex].Id);
+
+            if (!check)
+            {
+                return questList[randomIndex];
+            }
+            
+            return questList[randomIndex + 1];
         }
         catch (Exception e)
         {

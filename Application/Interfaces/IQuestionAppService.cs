@@ -8,5 +8,5 @@ public interface IQuestionAppService
     
     Task<List<QuestionDto>> GetQuestionsByTopic(string topicId);
 
-    Task<QuestionDto> RandomQuestion(string topicId);
+    Task<QuestionDto> RandomQuestion(string topicId, string quizId);
 }

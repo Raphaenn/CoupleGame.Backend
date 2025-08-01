@@ -10,11 +10,11 @@ namespace Api.Controllers;
 [Route("[controller]/api")]
 public class UserPreferencesController : ControllerBase
 {
-    private readonly IUserPrefrencesService _userPreferencesService;
+    private readonly IUserPreferencesAppService _userPreferencesAppService;
 
-    public UserPreferencesController(IUserPrefrencesService userPreferencesService)
+    public UserPreferencesController(IUserPreferencesAppService userPreferencesAppService)
     {
-       _userPreferencesService = userPreferencesService; 
+        _userPreferencesAppService = userPreferencesAppService; 
     }
     
     [HttpPost("/user/create-preferences")]
@@ -27,8 +27,21 @@ public class UserPreferencesController : ControllerBase
                 UserId = string.IsNullOrEmpty(user.UserId) ? Guid.Empty : Guid.Parse(user.UserId),
             };
 
-            UserPreferencesDto createdUser = await _userPreferencesService.CreateUserPreferences(userRequest);
+            UserPreferencesDto createdUser = await _userPreferencesAppService.CreateUserPreferences(userRequest);
             return Ok(createdUser);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpGet("/user/preferences/{id}")]
+    public async Task<ActionResult<UserPreferencesDto?>> GetUserPreferences([FromRoute] string id)
+    {
+        try
+        {
+            return Ok(id);
         }
         catch (Exception e)
         {

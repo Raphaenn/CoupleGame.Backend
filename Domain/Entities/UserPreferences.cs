@@ -6,7 +6,7 @@ public class UserPreferences
     public Guid UserId { get; private set; }
     public string Location { get; private set; }
     public decimal? DistanceKm { get; private set; }
-    public string GenderPreference { get; private set; } // "GIRLS", "BOYS", "BOTH"
+    public string GenderPreference { get; private set; }
     public int? AgeMin { get; private set; }
     public int? AgeMax { get; private set; }
     public decimal? HeightMin { get; private set; }

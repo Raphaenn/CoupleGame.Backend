@@ -36,6 +36,7 @@ public class CoupleAppService : ICoupleAppService
             await _coupleRepository.StartNewCouple(coupleInstance);
             CoupleDto response = new CoupleDto
             {
+                Id = coupleInstance.Id.ToString(),
                 UserOneId = coupleInstance.CoupleOne.ToString(),
                 UserTwoId = null,
                 Status = coupleInstance.Status.ToString(),

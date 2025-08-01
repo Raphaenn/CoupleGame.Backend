@@ -23,6 +23,7 @@ builder.Services.AddQuestionServices();
 builder.Services.AddQuestionServices();
 builder.Services.AddQuizServices();
 builder.Services.AddAnswerServices();
+builder.Services.AddInviteServices();
 
 // Configure CORS
 builder.Services.AddCors(options =>

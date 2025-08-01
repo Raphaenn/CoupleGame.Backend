@@ -22,6 +22,7 @@ public class Quiz
     public QuizStatus Status { get; private set; } = QuizStatus.Active;
     public DateTime CreatedAt { get; private set; }
     
+    // aggregate
     private readonly List<Answers> _answersList = new List<Answers>();
     public ReadOnlyCollection<Answers> AnswersList => _answersList.AsReadOnly();
     
@@ -75,5 +76,18 @@ public class Quiz
             throw new ArgumentNullException(nameof(answer));
 
         _answersList.Add(answer);
+    }
+
+    public static bool QuizContainsQuestion(Quiz quiz, string question)
+    {
+        if (!Guid.TryParse(question, out Guid questionId))
+            return false;
+
+        return quiz.Question1 == questionId
+               || quiz.Question2 == questionId
+               || quiz.Question3 == questionId
+               || quiz.Question4 == questionId
+               || quiz.Question5 == questionId
+               || quiz.Question6 == questionId;
     }
 }
