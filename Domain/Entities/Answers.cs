@@ -13,6 +13,9 @@ public class Answers
     public string? Answer6 { get; set; }
     public DateTime CreatedAt { get; set; }
 
+    private readonly List<string> _questions = new List<string>();
+    public IReadOnlyList<string> Questions => _questions.AsReadOnly();
+
     private Answers(Guid id, Guid userId, Guid quizId, string answer1, string answer2, string answer3, string answer4, string answer5, string answer6, DateTime createdAt)
     {
         Id = id;
@@ -45,5 +48,18 @@ public class Answers
         if (Answer5 == null) { Answer5 = answer; return true; }
         if (Answer6 == null) { Answer6 = answer; return true; }
         return false;
+    }
+
+    public void AddQuestion(List<string> data)
+    {
+        if (data == null)
+            throw new ArgumentNullException(nameof(data));
+
+        foreach (string q in data)
+        {
+            _questions.Add(q);
+        }
+
+        return;
     }
 }

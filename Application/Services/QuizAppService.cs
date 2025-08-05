@@ -185,8 +185,9 @@ public class QuizAppService : IQuizAppService
                 await _answerRepository.UpdateAnswer(getAnswers.Id, position, answer);
                 AnswerDto answerDto = new AnswerDto 
                 {
-                    Id = getAnswers.Id,
-                    UserId = getAnswers.UserId,
+                    Id = getAnswers.Id.ToString(),
+                    UserId = getAnswers.UserId.ToString(),
+                    QuizId = getAnswers.QuizId.ToString(),
                     Answer1 = getAnswers.Answer1,
                     Answer2 = getAnswers.Answer2,
                     Answer3 = getAnswers.Answer3,
@@ -203,8 +204,9 @@ public class QuizAppService : IQuizAppService
             // return newAnswers;
             AnswerDto newAnswerDto = new AnswerDto 
             {
-                Id = newAnswers.Id,
-                UserId = newAnswers.UserId,
+                Id = newAnswers.Id.ToString(),
+                UserId = newAnswers.UserId.ToString(),
+                QuizId = newAnswers.QuizId.ToString(),
                 Answer1 = newAnswers.Answer1,
                 Answer2 = newAnswers.Answer2,
                 Answer3 = newAnswers.Answer3,
@@ -294,8 +296,9 @@ public class QuizAppService : IQuizAppService
                 }).ToList(),
                 Answer = quiz.AnswersList.Select(a => new AnswerDto
                 {
-                    Id = a.Id,
-                    UserId = a.UserId,
+                    Id = a.Id.ToString(),
+                    UserId = a.UserId.ToString(),
+                    QuizId = a.QuizId.ToString(),
                     Answer1 = a.Answer1,
                     Answer2 = a.Answer2,
                     Answer3 = a.Answer3,

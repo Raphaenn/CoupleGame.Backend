@@ -14,19 +14,74 @@ public class AnswerAppService : IAnswerAppService
         _answerRepository = answerRepository;
     }
     
-    public async Task<AnswerDto> GetAnswerById(string id)
+    public async Task<CompletedAnswers> GetCompleteAnswerByQuiz(string quizId, string userId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            Guid parsedQuizId = Guid.Parse(quizId);
+            Guid parsedUserId = Guid.Parse(userId);
+            Answers answers = await _answerRepository.GetCompletedAnswers(parsedQuizId, parsedUserId);
+            CompletedAnswers res = new CompletedAnswers
+            {
+                Id = answers.Id.ToString(),
+                UserId = answers.UserId.ToString(),
+                QuizId = answers.QuizId.ToString(),
+                Question1 = answers.Questions[0],
+                Answer1 = answers.Answer1,
+                Question2 = answers.Questions[1],
+                Answer2 = answers.Answer2,
+                Question3 = answers.Questions[2],
+                Answer3 = answers.Answer3,
+                Question4 = answers.Questions[3],
+                Answer4 = answers.Answer4,
+                Question5 = answers.Questions[4],
+                Answer5 = answers.Answer5,
+                Question6 = answers.Questions[5],
+                Answer6 = answers.Answer6,
+                CreatedAt = answers.CreatedAt
+            };
+
+            return res;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
     }
 
-    public async Task CreateNewAnswer(string userId, string quizId, string answer)
+    public async Task<AnswerDto> AnswerQuiz(string userId, string quizId, string answer1, string answer2, string answer3, string answer4, string answer5, string answer6)
     {
         try
         {
             Guid parsedUserId = Guid.Parse(userId);
             Guid parsedQuizId = Guid.Parse(quizId);
-            Answers answers = Answers.StartAnswer(parsedUserId, parsedQuizId, answer, null, null, null, null, null);
+            Answers answers = Answers.StartAnswer(
+                parsedUserId, 
+                parsedQuizId,
+                answer1,
+                answer2,
+                answer3,
+                answer4,
+                answer5,
+                answer6
+            );
+            
             await _answerRepository.CreateAnswer(answers);
+            AnswerDto parsed = new AnswerDto
+            {
+                Id = answers.Id.ToString(),
+                UserId = answers.UserId.ToString(),
+                QuizId = answers.QuizId.ToString(),
+                Answer1 = answers.Answer1,
+                Answer2 = answers.Answer2,
+                Answer3 = answers.Answer3,
+                Answer4 = answers.Answer4,
+                Answer5 = answers.Answer5,
+                Answer6 = answers.Answer6,
+                CreatedAt = answers.CreatedAt
+            };
+
+            return parsed;
         }
         catch (Exception e)
         {

@@ -16,13 +16,13 @@ public class AnswerController : ControllerBase
         _answerAppService = answerAppService;
     }
 
-    [HttpPost("/answer/init")]
+    [HttpPost("/answer/create")]
     public async Task<ActionResult<AnswerDto>> InitAnswer([FromBody] InitAnswerRequest request)
     {
         try
         {
-            await _answerAppService.CreateNewAnswer(userId: request.UserId, quizId: request.QuizId, answer: request.Answer);
-            return Ok();
+            AnswerDto answer = await _answerAppService.AnswerQuiz(userId: request.UserId, quizId: request.QuizId, answer1: request.Answer1, answer2: request.Answer2, answer3: request.Answer3, answer4: request.Answer4, answer5: request.Answer5, answer6: request.Answer6);
+            return Ok(answer);
         }
         catch (Exception e)
         {
@@ -37,6 +37,20 @@ public class AnswerController : ControllerBase
         {
             await _answerAppService.UpdateAnswerById(id: request.Id, answer: request.Answer);
             return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPost("/answers/completed")]
+    public async Task<ActionResult<CompletedAnswers>> GetCompletedAnswers([FromBody] CompletedAnswersRequest req)
+    {
+        try
+        {
+            CompletedAnswers res = await _answerAppService.GetCompleteAnswerByQuiz(req.QuizId, req.UserId);
+            return Ok(res);
         }
         catch (Exception e)
         {
