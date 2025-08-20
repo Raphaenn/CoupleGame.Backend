@@ -350,9 +350,6 @@ public class QuizAppService : IQuizAppService
                 questionList.Add(q);
             }
             
-            
-            watch.Stop();
-            Console.WriteLine($"⏱️ Tempo SEQUENCIAL: {watch.ElapsedMilliseconds} ms");
             QuizDto quizDto = new QuizDto
             {
                 QuizId = complete.Id.ToString(),
@@ -385,6 +382,9 @@ public class QuizAppService : IQuizAppService
                     CreatedAt = a.CreatedAt
                 })
             };
+            
+            watch.Stop();
+            Console.WriteLine($"⏱️ Tempo SEQUENCIAL: {watch.ElapsedMilliseconds} ms");
             return quizDto;
         }
         catch (Exception e)

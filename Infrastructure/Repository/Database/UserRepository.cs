@@ -31,12 +31,12 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<User> SearchUser(string userId)
+    public async Task<User> SearchUser(Guid userId)
     {
         var conn = await _dbSession.GetConnectionAsync();
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
-        command.CommandText = "SELECT * FROM users WHERE id == @userId";
+        command.CommandText = "SELECT * FROM users WHERE id = @userId";
         command.Parameters.AddWithValue("@userId", userId);
 
         var reader = await command.ExecuteReaderAsync();
@@ -45,7 +45,7 @@ public class UserRepository : IUserRepository
         {
             Guid id = Guid.Parse(reader["id"].ToString());
             string name = reader["name"].ToString();
-            string email = reader["birthdate"].ToString();
+            string email = reader["email"].ToString();
 
             User user = User.Rehydrate(id, name, email);
             return user;

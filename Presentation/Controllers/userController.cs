@@ -11,6 +11,8 @@ public class UserController : ControllerBase
 {
    private readonly IUserAppService _userAppService;
 
+   public record struct UserSearchRequest(string Id);
+
    public UserController(IUserAppService userAppService)
    {
       _userAppService = userAppService;
@@ -25,14 +27,24 @@ public class UserController : ControllerBase
          {
             Name = user.Nome,
             Email = user.Email,
-            Password = user.Senha,
-            Birthdate = user.DataNascimento,
-            Height = user.Altura,
-            Weight = user.Peso,
          };
 
          UserDto createdUser = await _userAppService.CreateUser(userRequest);
          return Ok(createdUser);
+      }
+      catch (Exception e)
+      {
+         return BadRequest(e.Message);
+      }
+   }
+   
+   [HttpPost("/user/search")]
+   public async Task<ActionResult<UserDto>> SearchUserInfo([FromBody] UserSearchRequest req)
+   {
+      try
+      {
+         UserDto user = await _userAppService.SearchUserService(req.Id);
+         return Ok(user);
       }
       catch (Exception e)
       {
