@@ -12,6 +12,8 @@ public class QuizController : ControllerBase
 {
     private readonly IQuizAppService _quizAppService;
 
+    public record ResultRequest(string QuizId, string A1Id, string A2Id);
+
     public QuizController(IQuizAppService quizAppService)
     {
         _quizAppService = quizAppService;
@@ -111,6 +113,20 @@ public class QuizController : ControllerBase
         try
         {
             return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    [HttpGet("/quiz/result/{id}")]
+    public async Task<ActionResult<QuizDto>> GetQuizResult([FromRoute] string id)
+    {
+        try
+        {
+            var q = await _quizAppService.GetResult(id);
+            return Ok(q);
         }
         catch (Exception e)
         {

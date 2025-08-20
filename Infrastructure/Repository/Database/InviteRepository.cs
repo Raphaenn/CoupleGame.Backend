@@ -36,17 +36,16 @@ public class InviteRepository : IInviteRepository
         }
     }
 
-    public async Task<Invite?> GetInviteByQuizEmail(Guid quizId, string email)
+    public async Task<List<Invite>> GetInvitesByEmail(string email)
     {
         await using (var connection = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = connection;
-                command.CommandText = "SELECT * FROM invite WHERE email = @email AND quiz_id = @quizId";
+                command.CommandText = "SELECT * FROM invite WHERE email = @email";
                 
                 command.Parameters.AddWithValue("email", email);
-                command.Parameters.AddWithValue("quizId", quizId);
 
                 var reader = await command.ExecuteReaderAsync();
                 
@@ -54,6 +53,8 @@ public class InviteRepository : IInviteRepository
                 {
                     return null;
                 }
+
+                List<Invite> inviteList = new List<Invite>();
                 while (await reader.ReadAsync())
                 {
                     Guid inviteId = (Guid)reader["id"];
@@ -64,10 +65,10 @@ public class InviteRepository : IInviteRepository
                     
                     Invite res = Invite.Rehydrate(inviteId, quiz, hostId, mail, accepted);
 
-                    return res;
+                    inviteList.Add(res);
                 }
+                return inviteList;
             }
-            return null;
         }
     }
 

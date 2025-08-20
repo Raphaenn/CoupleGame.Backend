@@ -7,39 +7,50 @@ namespace Infrastructure.Repository.Database;
 
 public class UserRepository : IUserRepository
 {
-    private readonly PostgresConnection _postgresConnection;
+    private readonly DbSession _dbSession;
 
-    public UserRepository(PostgresConnection postgresConnection)
+    public UserRepository(DbSession dbSession)
     {
-        _postgresConnection = postgresConnection;
+        _dbSession = dbSession;
     }
 
     public async Task<User> CreateUser(User userData)
     {
-        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        var conn = await _dbSession.GetConnectionAsync();
+        await using (var command = new NpgsqlCommand())
         {
-            await using (var command = new NpgsqlCommand())
-            {
-                command.Connection = conn;
-                command.CommandText = "INSERT INTO users (id, name, email, password, birthdate, height, weight) VALUES (@id, @name, @email, @password, @birthdate, @height, @weight)";
-                command.Parameters.AddWithValue("@id", userData.Id);
-                command.Parameters.AddWithValue("@name", userData.Name);
-                command.Parameters.AddWithValue("@email", userData.Email);
-                command.Parameters.AddWithValue("@password", userData.Password);
-                command.Parameters.AddWithValue("@birthdate", userData.BirthDate);
-                command.Parameters.AddWithValue("@height", userData.Height);
-                command.Parameters.AddWithValue("@weight", userData.Weight);
+            command.Connection = conn;
+            command.CommandText = "INSERT INTO users (id, name, email, birthdate, height, weight) VALUES (@id, @name, @email, @birthdate, @height, @weight)";
+            command.Parameters.AddWithValue("@id", userData.Id);
+            command.Parameters.AddWithValue("@name", userData.Name);
+            command.Parameters.AddWithValue("@email", userData.Email);
 
-                await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync();
 
-                return userData;
-            }
+            return userData;
         }
     }
 
     public async Task<User> SearchUser(string userId)
     {
-        throw new NotImplementedException();
+        var conn = await _dbSession.GetConnectionAsync();
+        await using var command = new NpgsqlCommand();
+        command.Connection = conn;
+        command.CommandText = "SELECT * FROM users WHERE id == @userId";
+        command.Parameters.AddWithValue("@userId", userId);
+
+        var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            Guid id = Guid.Parse(reader["id"].ToString());
+            string name = reader["name"].ToString();
+            string email = reader["birthdate"].ToString();
+
+            User user = User.Rehydrate(id, name, email);
+            return user;
+        }
+        return null;
     }
 
     public async Task UpdateUser(string userId)

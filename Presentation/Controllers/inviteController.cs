@@ -48,7 +48,7 @@ public class InviteController : ControllerBase
     {
         try
         {
-            InviteDto? res = await _inviteAppService.GetInviteByQuizEmail(req.QuizId, req.Email);
+            List<InviteDto>? res = await _inviteAppService.InvitesByEmail(req.Email);
 
             if (res == null)
             {

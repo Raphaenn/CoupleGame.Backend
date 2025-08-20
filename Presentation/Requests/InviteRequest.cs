@@ -9,6 +9,5 @@ public class CreateRequest
 
 public class GetInviteRequest
 {
-    public string QuizId { get; set; }
     public string Email { get; set; }
 }

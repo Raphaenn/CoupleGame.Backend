@@ -20,7 +20,13 @@ public class AnswerAppService : IAnswerAppService
         {
             Guid parsedQuizId = Guid.Parse(quizId);
             Guid parsedUserId = Guid.Parse(userId);
-            Answers answers = await _answerRepository.GetCompletedAnswers(parsedQuizId, parsedUserId);
+            Answers? answers = await _answerRepository.GetCompletedAnswers(parsedQuizId, parsedUserId);
+
+            if (answers == null)
+            {
+                throw new ApplicationException("No completed answers was found");
+            }
+            
             CompletedAnswers res = new CompletedAnswers
             {
                 Id = answers.Id.ToString(),
@@ -103,7 +109,7 @@ public class AnswerAppService : IAnswerAppService
                 {
                     answerPosition = "answer_2";
                     return answerPosition;
-                }
+                    }
                 if (a.Answer3 == null)
                 {
                     answerPosition = "answer_3";

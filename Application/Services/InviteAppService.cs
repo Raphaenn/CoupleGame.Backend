@@ -41,29 +41,33 @@ public class InviteAppService : IInviteAppService
         }
     }
 
-    public async Task<InviteDto?> GetInviteByQuizEmail(string quizId, string email)
+    public async Task<List<InviteDto>>? InvitesByEmail(string email)
     {
         try
         {
-            Guid parsedQuizId = Guid.Parse(quizId);
-            Invite? invite = await _inviteRepository.GetInviteByQuizEmail(parsedQuizId, email);
+            List<Invite>? invites = await _inviteRepository.GetInvitesByEmail(email);
 
-            if (invite == null)
+            if (invites == null)
             {
                 return null;
             }
 
-            InviteDto parsedInvite = new InviteDto
+            List<InviteDto> parsedInviteList = new List<InviteDto>(); 
+            foreach (var invite in invites)
             {
-                Id = invite.Id.ToString(),
-                QuizId = invite.QuizId.ToString(),
-                HostId = invite.HostId.ToString(),
-                Email = invite.Email,
-                Accepted = invite.Accepted,
-                CreatedAt = invite.CreatedAt
-            };
+                InviteDto parsedInvite = new InviteDto
+                {
+                    Id = invite.Id.ToString(),
+                    QuizId = invite.QuizId.ToString(),
+                    HostId = invite.HostId.ToString(),
+                    Email = invite.Email,
+                    Accepted = invite.Accepted,
+                    CreatedAt = invite.CreatedAt
+                };
+                parsedInviteList.Add(parsedInvite);
+            }
             
-            return parsedInvite;
+            return parsedInviteList;
         }
         catch (Exception e)
         {

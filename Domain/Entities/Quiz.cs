@@ -21,6 +21,7 @@ public class Quiz
     public Guid? Question6 { get; private set; }
     public QuizStatus Status { get; private set; } = QuizStatus.Active;
     public DateTime CreatedAt { get; private set; }
+    public decimal? Result { get; set; } 
     
     // aggregate
     private readonly List<Answers> _answersList = new List<Answers>();
@@ -28,6 +29,7 @@ public class Quiz
     
     private readonly List<Question> _questionsList = new List<Question>();
     public ReadOnlyCollection<Question> QuestionsList => _questionsList.AsReadOnly();
+    
 
     private Quiz(Guid id, Guid coupleId, Guid question1, Guid? question2, Guid? question3, Guid? question4, Guid? question5, Guid? question6, DateTime createdAt)
     {
@@ -62,7 +64,7 @@ public class Quiz
         return false;
     }
     
-    internal void AddQuestion(Question question)
+    public void AddQuestion(Question question)
     {
         if (question == null)
             throw new ArgumentNullException(nameof(question));

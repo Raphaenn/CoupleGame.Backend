@@ -39,20 +39,19 @@ public class AnswerRepository : IAnswerRepository
                     string? answer6 = (string)reader["answer_6"];
                     DateTime createdAt = (DateTime)reader["created_at"];
 
-                    // Answers response = new Answers
-                    // {
-                    //     Id = answerId,
-                    //     UserId = userId,
-                    //     QuizId = quizId,
-                    //     Answer1 = answer1,
-                    //     Answer2 = answer2,
-                    //     Answer3 = answer3,
-                    //     Answer4 = answer4,
-                    //     Answer5 = answer5,
-                    //     Answer6 = answer6,
-                    //     CreatedAt = createdAt
-                    // };
-                    // return response;
+                    return Answers.Rehydrate(
+                        answerId,
+                        userId,
+                        quizId,
+                        answer1,
+                        answer2,
+                        answer3,
+                        answer4,
+                        answer5,
+                        answer6,
+                        createdAt
+                    );
+
                 }
             }
 
@@ -202,6 +201,41 @@ public class AnswerRepository : IAnswerRepository
             }
 
             return null;
+        }
+    }
+
+    public async Task<List<Answers>> ListAnswersByQuizId(Guid id)
+    {
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM answers WHERE quiz_id = @id";
+                
+                command.Parameters.AddWithValue("@id", id);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                List<Answers> answersList = new List<Answers>();
+                while (await reader.ReadAsync())
+                {
+                    Guid answerId = (Guid)reader["id"];
+                    Guid userId = (Guid)reader["user_id"];
+                    Guid quizId = (Guid)reader["quiz_id"];
+                    string answer1 = (string)reader["answer_1"];
+                    string answer2 = (string)reader["answer_2"];
+                    string answer3 = (string)reader["answer_3"];
+                    string answer4 = (string)reader["answer_4"];
+                    string answer5 = (string)reader["answer_5"];
+                    string answer6 = (string)reader["answer_6"];
+                    DateTime createdAt = (DateTime)reader["created_at"];
+
+                    Answers answer = Answers.Rehydrate(answerId, userId, quizId, answer1, answer2, answer3, answer4, answer5, answer6, createdAt);
+                    answersList.Add(answer);
+                }
+                return answersList;
+            }
         }
     }
 

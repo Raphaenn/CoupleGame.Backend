@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Application.Dtos;
 using Application.Interfaces;
 using Domain.Entities;
@@ -314,6 +315,82 @@ public class QuizAppService : IQuizAppService
         catch (Exception e)
         {
             throw new Exception(e.Message);
+        }
+    }
+
+    public async Task<QuizDto> GetResult(string quizId)
+    {
+        try
+        {
+            Stopwatch watch = Stopwatch.StartNew();
+            Guid parsedQuizId = Guid.Parse(quizId);
+            
+            var quizTask = _quizRepository.GetQuizById(parsedQuizId);
+            var answerTask = _answerRepository.ListAnswersByQuizId(parsedQuizId);
+
+            await Task.WhenAll(quizTask, answerTask);
+            Quiz quiz = await quizTask;
+            List<Answers> answer = await answerTask;
+
+            var complete = QuizService.QuizResults(quiz, answer);
+            List<Guid> questions = new List<Guid>();
+            questions.AddRange(new[] {
+                complete.Question1,
+                complete.Question2,
+                complete.Question3,
+                complete.Question4,
+                complete.Question5,
+                complete.Question6,
+            }.Where(q => q.HasValue).Select(q => q.Value));
+
+            List<Question> questionList = new List<Question>();
+            foreach (var question in questions)
+            {
+                Question q = await _questionRepository.GetSingleQuestion(question);
+                questionList.Add(q);
+            }
+            
+            
+            watch.Stop();
+            Console.WriteLine($"⏱️ Tempo SEQUENCIAL: {watch.ElapsedMilliseconds} ms");
+            QuizDto quizDto = new QuizDto
+            {
+                QuizId = complete.Id.ToString(),
+                CoupleId = complete.Id.ToString(),
+                QuestionId1 = complete.Question1.ToString(),
+                QuestionId2 = complete.Question2.ToString(),
+                QuestionId3 = complete.Question3.ToString(),
+                QuestionId4 = complete.Question4.ToString(),
+                QuestionId5 = complete.Question5.ToString(),
+                QuestionId6 = complete.Question6.ToString(),
+                CreatedAt = complete.CreatedAt,
+                Result = complete.Result,
+                Questions = questionList.Select(qt => new QuestionDto
+                {
+                    Id = qt.Id.ToString(),
+                    TopicId = qt.TopicId.ToString(),
+                    QuestionText = qt.QuestionText,
+                }),
+                Answer = answer.Select(a => new AnswerDto
+                {
+                    Id = a.Id.ToString(),
+                    UserId = a.UserId.ToString(),
+                    QuizId = a.QuizId.ToString(),
+                    Answer1 = a.Answer1,
+                    Answer2 = a.Answer2,
+                    Answer3 = a.Answer3,
+                    Answer4 = a.Answer4,
+                    Answer5 = a.Answer5,
+                    Answer6 = a.Answer6,
+                    CreatedAt = a.CreatedAt
+                })
+            };
+            return quizDto;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
         }
     }
 }

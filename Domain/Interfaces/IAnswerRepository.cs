@@ -12,5 +12,7 @@ public interface IAnswerRepository
 
     Task UpdateAnswer(Guid id, string answerPosition, string answer);
 
-    Task<Answers> GetCompletedAnswers(Guid quizId, Guid userId);
+    Task<Answers?> GetCompletedAnswers(Guid quizId, Guid userId);
+
+    Task<List<Answers>> ListAnswersByQuizId(Guid quizId);
 }

@@ -10,12 +10,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<PostgresConnection>(_ =>
+// Singleton para a fonte de dados (DataSource é thread-safe e recomendado como singleton)
+builder.Services.AddSingleton<PostgresConnection>(_ =>
 {
     string? connectionString = builder.Configuration.GetConnectionString(name: "DefaultConnection");
-    return new PostgresConnection(connectionString);
+    return new PostgresConnection(connectionString!);
 });
 
+builder.Services.AddScoped<DbSession>();
 builder.Services.AddUserService();
 builder.Services.AddCoupleServices();
 builder.Services.AddTopicService();

@@ -19,7 +19,7 @@ public class UserAppService : IUserAppService
         try
         {
             Guid userId = Guid.NewGuid();
-            User createdUser = new User(id: userId, name: user.Name, email: user.Email, passsword: user.Password, birthdate: user.Birthdate, height: user.Height, weight: user.Weight);
+            User createdUser = new User(id: userId, name: user.Name, email: user.Email);
 
             await _userRepository.CreateUser(createdUser);
             
