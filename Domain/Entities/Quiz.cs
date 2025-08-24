@@ -92,4 +92,9 @@ public class Quiz
                || quiz.Question5 == questionId
                || quiz.Question6 == questionId;
     }
+
+    public void UpdateQuizStatus(QuizStatus newStatus)
+    {
+        this.Status = newStatus;
+    }
 }

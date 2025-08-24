@@ -133,4 +133,18 @@ public class QuizController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpPost("/quiz/change-status")]
+    public async Task<ActionResult<QuizDto>> UpdateStatus([FromBody] UpdateQuizRequest req)
+    {
+        try
+        {
+            var q = await _quizAppService.UpdateQuizStatus(req.QuizId, req.Status);
+            return Ok(q);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

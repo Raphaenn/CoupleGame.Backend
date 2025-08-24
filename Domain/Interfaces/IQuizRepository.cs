@@ -11,4 +11,6 @@ public interface IQuizRepository
     Task<Quiz> GetQuizById(Guid id); 
     
     Task<Quiz?> GetQuizByCoupleId(Guid coupleId);
+
+    Task ChangeQuizStatus(Guid quizId, QuizStatus status);
 }

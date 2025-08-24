@@ -12,6 +12,7 @@ public class QuizDto
     public string? QuestionId6 { get; set; }
     public DateTime CreatedAt { get; set; }
     public decimal? Result { get; set; }
+    public string? Status { get; set; }
     
     public IEnumerable<QuestionDto> Questions { get; set; } = new List<QuestionDto>();
     public IEnumerable<AnswerDto> Answer { get; set; } = new List<AnswerDto>();

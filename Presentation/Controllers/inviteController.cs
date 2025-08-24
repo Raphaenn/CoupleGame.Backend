@@ -61,4 +61,18 @@ public class InviteController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpDelete("/invite/{id}")]
+    public async Task<ActionResult<InviteDto>> DeleteInviteById([FromRoute] string id)
+    {
+        try
+        {
+            await _inviteAppService.DeleteInvite(id);
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

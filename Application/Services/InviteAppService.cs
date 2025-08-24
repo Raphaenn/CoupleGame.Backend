@@ -97,4 +97,17 @@ public class InviteAppService : IInviteAppService
             throw new Exception(e.Message);
         }
     }
+
+    public async Task DeleteInvite(string id)
+    {
+        try
+        {
+            Guid parseId = Guid.Parse(id);
+            await _inviteRepository.DeleteInvite(parseId);
+        }
+        catch (Exception e)
+        {
+            throw new ApplicationException(e.Message);
+        }
+    }
 }

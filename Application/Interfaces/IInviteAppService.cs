@@ -9,4 +9,6 @@ public interface IInviteAppService
     Task<List<InviteDto>> InvitesByEmail(string email);
 
     Task AcceptInvite(string inviteId);
+
+    Task DeleteInvite(string id);
 }

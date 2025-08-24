@@ -7,16 +7,16 @@ namespace Infrastructure.Repository.Database;
 
 public class QuizRepository : IQuizRepository
 {
-    private readonly DbSession _dbSession;
+    private readonly PostgresConnection _postgresConnection;
 
-    public QuizRepository(DbSession dbSession)
+    public QuizRepository(PostgresConnection postgresConnection)
     {
-        _dbSession = dbSession;
+        _postgresConnection = postgresConnection;
     }
 
     public async Task<Quiz> StartQuiz(Guid quizId, Guid coupleId, Guid questionId)
     {
-        var conn = await _dbSession.GetConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using (var command = new NpgsqlCommand())
         {
             command.Connection = conn;
@@ -35,7 +35,7 @@ public class QuizRepository : IQuizRepository
 
     public async Task UpdateQuiz(Quiz quiz)
     {
-        var conn = await _dbSession.GetConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using (var command = new NpgsqlCommand())
         {
             command.Connection = conn;
@@ -56,7 +56,7 @@ public class QuizRepository : IQuizRepository
 
     public async Task<Quiz> GetQuizById(Guid id)
     {
-        var conn = await _dbSession.GetConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using (var command = new NpgsqlCommand())
         {
             command.Connection = conn;
@@ -93,7 +93,7 @@ public class QuizRepository : IQuizRepository
 
     public async Task CreateQuiz(Quiz quiz)
     {
-        var conn = await _dbSession.GetConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using (var command = new NpgsqlCommand())
         {
             command.Connection = conn;
@@ -115,7 +115,7 @@ public class QuizRepository : IQuizRepository
 
     public async Task<Quiz?> GetQuizByCoupleId(Guid coupleId)
     {
-        var conn = await _dbSession.GetConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using (var command = new NpgsqlCommand())
         {
             command.Connection = conn;
@@ -158,5 +158,20 @@ public class QuizRepository : IQuizRepository
             }
         }
         return null;
+    }
+
+    public async Task ChangeQuizStatus(Guid quizId, QuizStatus status)
+    {
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
+        await using (var command = new NpgsqlCommand())
+        {
+            command.Connection = conn;
+            command.CommandText = "UPDATE quiz SET status = @status WHERE id = @quizId;";
+            
+            command.Parameters.AddWithValue("@quizId", quizId);
+            command.Parameters.AddWithValue("@status", status.ToString());
+
+            await command.ExecuteNonQueryAsync();
+        }
     }
 }

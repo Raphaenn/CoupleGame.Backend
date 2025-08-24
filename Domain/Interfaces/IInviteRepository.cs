@@ -11,4 +11,6 @@ public interface IInviteRepository
     Task<Invite?> GetInviteById(Guid id);
 
     Task AcceptInvite(Invite invite);
+
+    Task DeleteInvite(Guid id);
 }

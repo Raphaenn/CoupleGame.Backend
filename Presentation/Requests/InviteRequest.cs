@@ -11,3 +11,8 @@ public class GetInviteRequest
 {
     public string Email { get; set; }
 }
+
+public class DeleteInviteRequest
+{
+    public string Id { get; }
+}

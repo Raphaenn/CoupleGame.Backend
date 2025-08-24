@@ -393,4 +393,43 @@ public class QuizAppService : IQuizAppService
             throw;
         }
     }
+
+    public async Task<QuizDto> UpdateQuizStatus(string quizId, string status)
+    {
+        try
+        {
+            Guid parsedQuizId = Guid.Parse(quizId);
+            Quiz quiz = await _quizRepository.GetQuizById(parsedQuizId);
+
+            if (quiz == null)
+            {
+                throw new ArgumentException("Quiz not found");
+            }
+            
+
+            QuizStatus parsedStatus = (QuizStatus)Enum.Parse(typeof(QuizStatus), status);
+            quiz.UpdateQuizStatus(parsedStatus);
+            
+            await _quizRepository.ChangeQuizStatus(quiz.Id, parsedStatus);
+
+            QuizDto parsedQuiz = new QuizDto
+            {
+                QuizId = quiz.Id.ToString(),
+                CoupleId = quiz.CoupleId.ToString(),
+                QuestionId1 = quiz.Question1.ToString(),
+                QuestionId2 = quiz.Question2.ToString(),
+                QuestionId3 = quiz.Question3.ToString(),
+                QuestionId4 = quiz.Question4.ToString(),
+                QuestionId5 = quiz.Question5.ToString(),
+                QuestionId6 = quiz.Question6.ToString(),
+                Status = status,
+                CreatedAt = quiz.CreatedAt
+            };
+            return parsedQuiz;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
 }

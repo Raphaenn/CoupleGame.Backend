@@ -123,4 +123,18 @@ public class InviteRepository : IInviteRepository
             }
         }
     }
+
+    public async Task DeleteInvite(Guid id)
+    {
+        await using var connection = await _postgresConnection.DataSource.OpenConnectionAsync();
+        await using (var command = new NpgsqlCommand())
+        {
+            command.Connection = connection;
+            command.CommandText = "DELETE FROM invite WHERE id = @id";
+
+            command.Parameters.AddWithValue("@id", id);
+                
+            await command.ExecuteNonQueryAsync();
+        }
+    }
 }

@@ -1,4 +1,5 @@
 using Application.Dtos;
+using Domain.Entities;
 
 namespace Application.Interfaces;
 
@@ -15,4 +16,6 @@ public interface IQuizAppService
     Task<AnswerDto> AnswerQuizQuestion(string userId, string quizId, string answer);
 
     Task<QuizDto> GetResult(string quizId);
+
+    Task<QuizDto> UpdateQuizStatus(string quizId, string status);
 }
