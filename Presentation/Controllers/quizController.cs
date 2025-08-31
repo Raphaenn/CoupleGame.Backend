@@ -147,4 +147,18 @@ public class QuizController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    
+    [HttpGet("/quiz/open-list/{userId}")]
+    public async Task<ActionResult<QuizDto>> ListOpenQuiz([FromRoute] string userId)
+    {
+        try
+        {
+            var q = await _quizAppService.ListOpenQuiz(userId);
+            return Ok(q);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }

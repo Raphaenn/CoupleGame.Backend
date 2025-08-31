@@ -9,7 +9,7 @@ public interface IQuizAppService
     
     Task<QuizDto?> UpdateQuiz(string quizId, string questionId);
 
-    Task<QuizDto?> GetQuizByCoupleId(string coupleId);
+    Task<List<QuizDto>> ListOpenQuiz(string userId);
 
     Task<QuizDto> GetInviteQuiz(string quizId);
 

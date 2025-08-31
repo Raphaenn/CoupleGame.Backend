@@ -86,22 +86,20 @@ public class CoupleRepository : ICoupleRepository
         }
     }
 
-    public async Task<Couple> SearchCoupleByUserId(Guid userId)
+    public async Task<List<Couple>> SearchCoupleByUserId(Guid userId)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
         {
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "SELECT * FROM couples WHERE user_id = @userId";
+                command.CommandText = "SELECT * FROM couple WHERE couple_one = @userId OR couple_two = @userId";;
                 command.Parameters.AddWithValue("@userId", userId);
 
                 var reader = await command.ExecuteReaderAsync();
-
-                if (!reader.HasRows)
-                {
-                    return null;
-                }
+                
+                List<Couple> coupleList = new List<Couple>();
+                
                 while (await reader.ReadAsync())
                 {
                     Guid id = (Guid)reader["id"];
@@ -110,11 +108,15 @@ public class CoupleRepository : ICoupleRepository
                     string type = (string)reader["type"];
                     string status = (string)reader["status"];
                     DateTime createdAt = (DateTime)reader["created_at"];
-                    return null;
-                }
-            }
 
-            return null;
+                    Enum.TryParse<CoupleTypes>(type, out var parsedType);
+                    Enum.TryParse<CoupleStatus>(status, out var parsedStatus);
+                    Couple couple = Couple.Rehydrate(id, userOne, userTwo, parsedType, parsedStatus, createdAt);
+                    coupleList.Add(couple);
+                }
+
+                return coupleList;
+            }
         }
     }
 

@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using Application.Dtos;
 using Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers;
@@ -43,11 +45,17 @@ public class QuestionController : ControllerBase
         }
     }
     
+    [Authorize]
     [HttpGet("/question/random/{topicId}")]
     public async Task<ActionResult<List<QuestionDto>>> GetRandomQuestion([FromRoute] string topicId, [FromQuery] string? quizId)
     {
         try
         {
+            foreach (var d in User.Claims)
+            {
+                Console.WriteLine(d);
+            }
+
             QuestionDto response = await _questionAppService.RandomQuestion(topicId, quizId);
             return Ok(response);
         }

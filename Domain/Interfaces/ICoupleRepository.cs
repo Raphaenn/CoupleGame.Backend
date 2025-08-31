@@ -8,6 +8,6 @@ public interface ICoupleRepository
     Task AddCoupleMember(Guid coupleId, Guid userId);
 
     Task<Couple> SearchCoupleById(Guid coupleId);
-    Task<Couple> SearchCoupleByUserId(Guid userId);
+    Task<List<Couple>> SearchCoupleByUserId(Guid userId);
     Task<Couple?> SearchCoupleRelationship(string userOneId, string userIdTwo);
 }

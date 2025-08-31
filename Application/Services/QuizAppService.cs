@@ -34,7 +34,7 @@ public class QuizAppService : IQuizAppService
         }
 
         Quiz quiz = Quiz.StartQuiz(parsedCoupleId, parsedQuestionId);
-        await _quizRepository.StartQuiz(quiz.Id, quiz.CoupleId, quiz.Question1);
+        await _quizRepository.StartQuiz(quiz.Id, quiz.CoupleId, quiz.Question1, QuizStatus.Active);
         
         return new QuizDto
         {
@@ -76,6 +76,7 @@ public class QuizAppService : IQuizAppService
                 QuestionId6 = quiz.Question6.ToString(),
                 CreatedAt = quiz.CreatedAt
             };
+            
             return added ? parsedQuiz : null;
         }
         catch (Exception e)
@@ -84,9 +85,43 @@ public class QuizAppService : IQuizAppService
         }
     }
 
-    public async Task<QuizDto?> GetQuizByCoupleId(string coupleId)
+    public async Task<List<QuizDto>> ListOpenQuiz(string userId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            Guid parsedId = Guid.Parse(userId);
+            List<Couple> couples = await _coupleRepository.SearchCoupleByUserId(parsedId);
+            if (!couples.Any())
+            {
+                throw new InvalidOperationException($"Couple not find {parsedId}");
+            }
+
+            foreach (var couple in couples)
+            {
+                List<Quiz> quiz = await _quizRepository.ListQuizByCoupleId(couple.Id);
+
+                return quiz.Select(q => new QuizDto
+                    {
+                        QuizId = q.Id.ToString(),
+                        CoupleId = q.CoupleId.ToString(),
+                        QuestionId1 = q.Question1.ToString(),
+                        QuestionId2 = q.Question2.ToString(),
+                        QuestionId3 = q.Question3.ToString(),
+                        QuestionId4 = q.Question4.ToString(),
+                        QuestionId5 = q.Question5.ToString(),
+                        QuestionId6 = q.Question6.ToString(),
+                        Status = q.Status.ToString(),
+                        CreatedAt = q.CreatedAt
+                    })
+                    .ToList();
+            }
+
+            return null;
+        }
+        catch (Exception e)
+        {
+            throw new ApplicationException(e.Message);
+        }
     }
 
     public async Task<QuizDto> GetInviteQuiz(string quizId)

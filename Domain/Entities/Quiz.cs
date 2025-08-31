@@ -19,7 +19,7 @@ public class Quiz
     public Guid? Question4 { get; private set; }
     public Guid? Question5 { get; private set; }
     public Guid? Question6 { get; private set; }
-    public QuizStatus Status { get; private set; } = QuizStatus.Active;
+    public QuizStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public decimal? Result { get; set; } 
     
@@ -31,7 +31,7 @@ public class Quiz
     public ReadOnlyCollection<Question> QuestionsList => _questionsList.AsReadOnly();
     
 
-    private Quiz(Guid id, Guid coupleId, Guid question1, Guid? question2, Guid? question3, Guid? question4, Guid? question5, Guid? question6, DateTime createdAt)
+    private Quiz(Guid id, Guid coupleId, Guid question1, Guid? question2, Guid? question3, Guid? question4, Guid? question5, Guid? question6, QuizStatus status, DateTime createdAt)
     {
         Id = id;
         CoupleId = coupleId;
@@ -41,17 +41,18 @@ public class Quiz
         Question4 = question4;
         Question5 = question5;
         Question6 = question6;
+        Status = status;
         CreatedAt = createdAt;
     }
 
     public static Quiz StartQuiz(Guid coupleId, Guid question1)
     {
-        return new Quiz(Guid.NewGuid(), coupleId, question1, null, null, null, null, null, DateTime.Now);
+        return new Quiz(Guid.NewGuid(), coupleId, question1, null, null, null, null, null, QuizStatus.Pending, DateTime.Now);
     }
 
-    public static Quiz Rehydrate(Guid id, Guid coupleId, Guid question1, Guid? question2, Guid? question3, Guid? question4, Guid? question5, Guid? question6, DateTime createdAt)
+    public static Quiz Rehydrate(Guid id, Guid coupleId, Guid question1, Guid? question2, Guid? question3, Guid? question4, Guid? question5, Guid? question6, QuizStatus status, DateTime createdAt)
     {
-        return new Quiz(id, coupleId, question1, question2, question3, question4, question5, question6, DateTime.Now);
+        return new Quiz(id, coupleId, question1, question2, question3, question4, question5, question6, status, createdAt);
     }
 
     public bool Update(Guid? questionId)
