@@ -53,6 +53,30 @@ public class UserRepository : IUserRepository
         return null;
     }
 
+    public async Task<List<User>> GetUserListByParams(string city)
+    {
+        var conn = await _dbSession.GetConnectionAsync();
+        await using var command = new NpgsqlCommand();
+        command.Connection = conn;
+        command.CommandText = "SELECT * FROM users WHERE city = @city";
+        command.Parameters.AddWithValue("@city", city);
+
+        var reader = await command.ExecuteReaderAsync();
+
+        List<User> userList = new List<User>();
+        while (await reader.ReadAsync())
+        {
+            Guid id = (Guid)reader["id"];
+            string name = reader["name"].ToString() ?? string.Empty;
+            string email = reader["email"].ToString() ?? string.Empty;
+
+            User user = User.Rehydrate(id, name, email);
+            userList.Add(user);
+        }
+
+        return userList;
+    }
+
     public async Task UpdateUser(string userId)
     {
         throw new NotImplementedException();

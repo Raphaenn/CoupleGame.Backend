@@ -6,4 +6,12 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <Folder Include="Events\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Entities\Person.cs" />
+    </ItemGroup>
+
 </Project>
