@@ -9,7 +9,7 @@ public interface IRecommendationAppService
 
     Task<Ladder> GetLadderById(string id, CancellationToken ct);
 
-    Task RecordVoteService(LadderId ladderId, string? idempotencyKey, CancellationToken ct);
+    Task RecordVoteService(LadderId ladderId, Guid a, Guid b, Guid winner, string? idempotencyKey, CancellationToken ct);
 
     Task? ShowRanking(LadderId ladderId);
 

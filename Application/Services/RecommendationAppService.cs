@@ -5,6 +5,7 @@ using Domain.Interfaces;
 using Domain.Interfaces.IRecommnedation;
 using Domain.Services;
 using Domain.ValueObjects;
+using Infrastructure.Repository.Database;
 
 namespace Application.Services;
 
@@ -12,11 +13,13 @@ public class RecommendationAppService : IRecommendationAppService
 {
     private readonly ILadderRepository _ladderRepository;
     private readonly IUserRepository _userRepository;
+    private readonly RecommendationRepository _recommendationRepository;
     
-    public RecommendationAppService(ILadderRepository ladderRepository, IUserRepository userRepository)
+    public RecommendationAppService(ILadderRepository ladderRepository, IUserRepository userRepository, RecommendationRepository recommendationRepository)
     {
         _ladderRepository = ladderRepository;
         _userRepository = userRepository;
+        _recommendationRepository = recommendationRepository;
     }
 
     public async Task<IEnumerable<PersonRating>> GetRecommendationService(LadderId ladderId)
@@ -57,46 +60,27 @@ public class RecommendationAppService : IRecommendationAppService
         // PersonRating pRating = new PersonRating(ladderId, users)
     }
 
-    // public async Task RecordVoteService(LadderId ladderId, Guid a, Guid b, Guid winner, string? idempotencyKey, CancellationToken ct)
-    public async Task RecordVoteService(LadderId ladderId, string? idempotencyKey, CancellationToken ct)
+    public async Task RecordVoteService(LadderId ladderId, Guid a, Guid b, Guid winner, string? idempotencyKey, CancellationToken ct)
     {
-        List<User> users = await _userRepository.GetUserListByParams("Niterói");
-        List<PersonRating> pRatingList = new List<PersonRating>();
-        List<PersonRating> ranking = new List<PersonRating>();
+        User user1 = await _userRepository.SearchUser(a);
+        User user2 = await _userRepository.SearchUser(b);
+        
+        PersonRating p1 = new PersonRating(ladderId, user1.Id);
+        PersonRating p2 = new PersonRating(ladderId, user2.Id);
+        Console.WriteLine(p1.Rating);
+        var param = new EloParams(KFactor: 32, Scale: 400, AllowDraws: false);
+        var svc = new EloRatingResult();
         // MatchVote vote = new MatchVote();
-        
-        foreach (var user in users)
-        {
-            PersonRating p = new PersonRating(ladderId, user.Id);
-            pRatingList.Add(p);
-        }
-        // get random match
-        var picker = new RandomPairingPolicy(pRatingList);
 
-        // vote simulate
-        for (int i = 0; i < 20; i++)
-        {
-            var (p1, p2) = picker.PickPairAsync();
-            
-            var win = (new Random().NextDouble() < 0.6)           // Randomly decide bias path.
-                ? (string.Compare(p1.UserId.ToString(), p2.UserId.ToString(), StringComparison.Ordinal) <= 0 ? p1 : p2)
-                : (string.Compare(p1.UserId.ToString(), p2.UserId.ToString(), StringComparison.Ordinal) > 0  ? p1 : p2);
-            
-            var param = new EloParams(KFactor: 32, Scale: 400, AllowDraws: false);
-            
-            // derive o outcome com base em quem venceu
-            var outcome = ReferenceEquals(win, p1) ? MatchOutcome.AWins : MatchOutcome.BWins;
-
-            var svc = new EloRatingResult();
-            EloResult r = svc.Apply(p1, p2, outcome, param);
-            Console.WriteLine("\nLeaderboard:");           // Header for the final ranking.
-            // foreach (var p in service.GetLeaderboard())    // Print each person in rating order.
-            //     Console.WriteLine(p);   
-            
-        }
+        var win = (string.Compare(winner.ToString(), p1.UserId.ToString(), StringComparison.Ordinal) <= 0 ? p1 : p2);
+        var outcome = ReferenceEquals(win, p1) ? MatchOutcome.AWins : MatchOutcome.BWins;
         
-        // PersonRating pRating = new PersonRating(ladderId, users)
-        
+        EloResult r = svc.Apply(p1, p2, outcome, param);
+        Console.WriteLine($"Updated rating: {r.ABefore}");
+        Console.WriteLine(p1.Rating);
+        // save results on DB
+        await _recommendationRepository.UpdateAsync(p1, ct);
+        await _recommendationRepository.UpdateAsync(p2, ct);
     }
 
     public async Task? ShowRanking(LadderId ladderId)

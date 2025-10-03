@@ -54,7 +54,21 @@ public class RecommendationRepository : ILadderRepository, IParticipantRatingRep
 
     public async Task UpdateAsync(PersonRating rating, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "UPDATE person_rating SET rating = @rating, wins = @wins, losses = @losses WHERE user_id = @userId;";
+                
+                command.Parameters.AddWithValue("userId", rating.UserId);
+                command.Parameters.AddWithValue("rating", rating.Rating);
+                command.Parameters.AddWithValue("wins", rating.Wins);
+                command.Parameters.AddWithValue("losses", rating.Losses);
+                
+                await command.ExecuteNonQueryAsync(ct);
+            }
+        } 
     }
 
     public async Task<Guid> InsertAsync(MatchVote vote, CancellationToken ct)
