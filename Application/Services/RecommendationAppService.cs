@@ -48,7 +48,7 @@ public class RecommendationAppService : IRecommendationAppService
             var param = new EloParams(KFactor: 32, Scale: 400, AllowDraws: false);
             
             // derive o outcome com base em quem venceu
-            var outcome = ReferenceEquals(win, p1) ? MatchOutcome.AWins : MatchOutcome.BWins;
+            var outcome = ReferenceEquals(win, p1) ? InteractionType.Like : InteractionType.Dislike;
 
             var svc = new EloRatingResult();
             EloResult r = svc.Apply(p1, p2, outcome, param);
@@ -59,7 +59,7 @@ public class RecommendationAppService : IRecommendationAppService
         // PersonRating pRating = new PersonRating(ladderId, users)
     }
 
-    public async Task RecordVoteService(LadderId ladderId, Guid a, Guid b, Guid winner, string? idempotencyKey, CancellationToken ct)
+    public async Task RecordVoteService(LadderId ladderId, Guid a, Guid b, InteractionType interaction, string? idempotencyKey, CancellationToken ct)
     {
         PersonRating p1 = await _recommendationRepository.GetForUpdateAsync(ladderId, a, ct);
         PersonRating p2 = await _recommendationRepository.GetForUpdateAsync(ladderId, b, ct);
@@ -67,17 +67,14 @@ public class RecommendationAppService : IRecommendationAppService
         Console.WriteLine(p1.Rating);
         var param = new EloParams(KFactor: 32, Scale: 400, AllowDraws: false);
         var svc = new EloRatingResult();
-
-        var win = (string.Compare(winner.ToString(), p1.UserId.ToString(), StringComparison.Ordinal) <= 0 ? p1 : p2);
-        var outcome = ReferenceEquals(win, p1) ? MatchOutcome.AWins : MatchOutcome.BWins;
         
-        EloResult r = svc.Apply(p1, p2, outcome, param);
+        EloResult r = svc.Apply(p1, p2, interaction, param);
         Console.WriteLine($"Updated rating: {r.ABefore}");
         Console.WriteLine(p1.Rating);
        
         // save results on DB
         await _recommendationRepository.UpdateAsync(p1, ct);
-        await _recommendationRepository.UpdateAsync(p2, ct);
+        // await _recommendationRepository.UpdateAsync(p2, ct);
     }
 
     public async Task? ShowRanking(LadderId ladderId)

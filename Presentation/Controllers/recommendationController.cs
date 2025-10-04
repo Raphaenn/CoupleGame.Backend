@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Domain.Entities;
+using Domain.Services;
 using Domain.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace Api.Controllers;
 public class RecommendationController : ControllerBase
 {
 
-    public record struct VoteRequest(string LadderId, string UserId, string User2Id, string Winner, string Idp);
+    public record struct VoteRequest(string LadderId, string UserId, string User2Id, InteractionType Interaction, string Idp);
     
     // todo - apply app service
     private readonly IRecommendationAppService _recommendationAppService;
@@ -57,9 +58,7 @@ public class RecommendationController : ControllerBase
             LadderId parsedLadder = new LadderId(Guid.Parse(req.LadderId));
             Guid parsedUserId = Guid.Parse(req.UserId);
             Guid parsedUser2Id = Guid.Parse(req.User2Id);
-            Guid parsedWinner = Guid.Parse(req.Winner);
-
-            await _recommendationAppService.RecordVoteService(parsedLadder, parsedUserId, parsedUser2Id, parsedWinner, req.Idp, ct);
+            await _recommendationAppService.RecordVoteService(parsedLadder, parsedUserId, parsedUser2Id, req.Interaction, req.Idp, ct);
             return Ok();
         }
         catch (Exception e)

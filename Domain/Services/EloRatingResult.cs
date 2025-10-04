@@ -3,7 +3,13 @@ using Domain.ValueObjects;
 
 namespace Domain.Services;
 
-public enum MatchOutcome { AWins, BWins, Draw }
+public enum InteractionType
+{
+    Like,        // 0.6
+    Match,       // 1.0
+    Dislike,     // 0.0
+    Skip         // 0.3
+}
 
 public sealed class EloRatingResult
 {
@@ -21,39 +27,37 @@ public sealed class EloRatingResult
     }
     
     // método público que aplica o resultado ao par (A,B) e devolve dados úteis (antes/depois etc.).
-    public EloResult Apply(PersonRating a, PersonRating b, MatchOutcome outcome, EloParams p)
+    public EloResult Apply(PersonRating a, PersonRating b, InteractionType interaction, EloParams p)
     {
         if (ReferenceEquals(a, b) || a.UserId == b.UserId)
             throw new Exception("A e B must be different.");
-
-        if (outcome == MatchOutcome.Draw && !p.AllowDraws)
-            throw new Exception("Draw is not allowed");
 
         // guarda os ratings antes do ajuste (útil para logs/histórico e para calcular deltas).
         var aBefore = a.Rating;
         var bBefore = b.Rating;
 
-        var scoreA = outcome switch
+        var scoreA = interaction switch
         {
-            MatchOutcome.AWins => 1.0,
-            MatchOutcome.BWins => 0.0,
-            MatchOutcome.Draw  => 0.5
+            InteractionType.Match   => 1.0, // Vitória completa
+            InteractionType.Like    => 0.6, // Vitória parcial
+            InteractionType.Skip    => 0.3, // Derrota leve / neutra
+            InteractionType.Dislike => 0.0, // Derrota total
+            _ => throw new ArgumentOutOfRangeException()
         };
 
         // calcula expectativa (eA/eB) e novos ratings (newA/newB) usando K e scale da ladder.
         var (newA, newB, eA, eB) = Update(aBefore, bBefore, p.KFactor, scoreA, p.Scale);
 
         // aplica nas entidades
-        switch (outcome)
+        if (scoreA > eA)
         {
-            case MatchOutcome.AWins:
-                a.ApplyWin(newA);
-                b.ApplyLoss(newB);
-                break;
-            case MatchOutcome.BWins:
-                a.ApplyLoss(newA);
-                b.ApplyWin(newB);
-                break;
+            a.ApplyWin(newA);
+            b.ApplyLoss(newB);
+        }
+        else
+        {
+            a.ApplyLoss(newA);
+            b.ApplyWin(newB);
         }
 
         // monta e retorna um DTO imutável com expectativas, ratings antes/depois

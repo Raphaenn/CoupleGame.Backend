@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Services;
 using Domain.ValueObjects;
 
 namespace Application.Interfaces;
@@ -9,7 +10,7 @@ public interface IRecommendationAppService
 
     Task<Ladder> GetLadderById(string id, CancellationToken ct);
 
-    Task RecordVoteService(LadderId ladderId, Guid a, Guid b, Guid winner, string? idempotencyKey, CancellationToken ct);
+    Task RecordVoteService(LadderId ladderId, Guid a, Guid b, InteractionType interaction, string? idempotencyKey, CancellationToken ct);
 
     Task? ShowRanking(LadderId ladderId);
 

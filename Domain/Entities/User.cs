@@ -1,10 +1,15 @@
-﻿namespace Domain.Entities;
+﻿using System.Collections.ObjectModel;
+
+namespace Domain.Entities;
 public class User
 {
     public Guid Id { get; private set; }
     public string Name { get; private set; } = String.Empty;
     public string Email { get; private set; } = String.Empty;
-    
+
+    private readonly List<string> _photos = new List<string>();
+    public IReadOnlyCollection<string> Photos => _photos.AsReadOnly();
+
     public User(Guid id, string name, string email)
     {
         Id = string.IsNullOrEmpty(name) ? throw new ArgumentException("Name cannot be empty"): id;
@@ -20,5 +25,10 @@ public class User
     private string ValidateEmail(string email)
     {
         return this.Email = email;
+    }
+    
+    public void AddPhoto(string photo)
+    {
+        _photos.Add(photo);
     }
 }
