@@ -12,6 +12,8 @@ public static class RecommendationServiceCollectionExtensions
     {
         // services.AddScoped<IAnswerRepository, AnswerRepository>();
         services.AddScoped<ILadderRepository, RecommendationRepository>();
+        services.AddScoped<IParticipantRatingRepository, RecommendationRepository>();
+        services.AddScoped<IMatchVoteRepository, RecommendationRepository>();
         services.AddScoped<IRecommendationAppService, RecommendationAppService>();
         services.AddScoped<EloRatingService>();
 

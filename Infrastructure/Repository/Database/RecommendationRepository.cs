@@ -44,17 +44,66 @@ public class RecommendationRepository : ILadderRepository, IParticipantRatingRep
 
     public async Task EnsureExistsAsync(LadderId ladderId, Guid userId, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM person_rating WHERE user_id = @userId AND ladder_id = @ladderId;";
+                
+                command.Parameters.AddWithValue("userId", userId);
+                command.Parameters.AddWithValue("ladderId", ladderId);
+
+                var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    
+                }
+            }
+        }
     }
 
     public async Task<PersonRating> GetForUpdateAsync(LadderId ladderId, Guid userId, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct))
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM person_rating WHERE user_id = @userId AND ladder_id = @ladderId;";
+                
+                command.Parameters.AddWithValue("userId", userId);
+                command.Parameters.AddWithValue("ladderId", Guid.Parse(ladderId.ToString()));
+
+                var reader = await command.ExecuteReaderAsync(ct);
+                
+                if (!reader.HasRows)
+                {
+                    return null;
+                }
+
+                while (await reader.ReadAsync(ct))
+                {
+                    Guid ladder = (Guid)reader["ladder_id"];
+                    Guid user = (Guid)reader["user_id"];    
+                    double rating = (double)reader["rating"];
+                    int wins = (int)reader["wins"];
+                    int losses = (int)reader["losses"];
+
+                    LadderId parsedLadder = new LadderId(ladder);
+                    PersonRating person = new PersonRating(parsedLadder, user, rating, wins, losses);
+                    return person;
+                }
+            }
+
+            return null;
+        }
     }
 
     public async Task UpdateAsync(PersonRating rating, CancellationToken ct)
     {
-        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct))
         {
             await using (var command = new NpgsqlCommand())
             {

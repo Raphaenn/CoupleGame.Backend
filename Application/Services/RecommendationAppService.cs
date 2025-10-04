@@ -5,7 +5,6 @@ using Domain.Interfaces;
 using Domain.Interfaces.IRecommnedation;
 using Domain.Services;
 using Domain.ValueObjects;
-using Infrastructure.Repository.Database;
 
 namespace Application.Services;
 
@@ -13,9 +12,9 @@ public class RecommendationAppService : IRecommendationAppService
 {
     private readonly ILadderRepository _ladderRepository;
     private readonly IUserRepository _userRepository;
-    private readonly RecommendationRepository _recommendationRepository;
+    private readonly IParticipantRatingRepository _recommendationRepository;
     
-    public RecommendationAppService(ILadderRepository ladderRepository, IUserRepository userRepository, RecommendationRepository recommendationRepository)
+    public RecommendationAppService(ILadderRepository ladderRepository, IUserRepository userRepository, IParticipantRatingRepository recommendationRepository)
     {
         _ladderRepository = ladderRepository;
         _userRepository = userRepository;
@@ -62,15 +61,12 @@ public class RecommendationAppService : IRecommendationAppService
 
     public async Task RecordVoteService(LadderId ladderId, Guid a, Guid b, Guid winner, string? idempotencyKey, CancellationToken ct)
     {
-        User user1 = await _userRepository.SearchUser(a);
-        User user2 = await _userRepository.SearchUser(b);
+        PersonRating p1 = await _recommendationRepository.GetForUpdateAsync(ladderId, a, ct);
+        PersonRating p2 = await _recommendationRepository.GetForUpdateAsync(ladderId, b, ct);
         
-        PersonRating p1 = new PersonRating(ladderId, user1.Id);
-        PersonRating p2 = new PersonRating(ladderId, user2.Id);
         Console.WriteLine(p1.Rating);
         var param = new EloParams(KFactor: 32, Scale: 400, AllowDraws: false);
         var svc = new EloRatingResult();
-        // MatchVote vote = new MatchVote();
 
         var win = (string.Compare(winner.ToString(), p1.UserId.ToString(), StringComparison.Ordinal) <= 0 ? p1 : p2);
         var outcome = ReferenceEquals(win, p1) ? MatchOutcome.AWins : MatchOutcome.BWins;
@@ -78,6 +74,7 @@ public class RecommendationAppService : IRecommendationAppService
         EloResult r = svc.Apply(p1, p2, outcome, param);
         Console.WriteLine($"Updated rating: {r.ABefore}");
         Console.WriteLine(p1.Rating);
+       
         // save results on DB
         await _recommendationRepository.UpdateAsync(p1, ct);
         await _recommendationRepository.UpdateAsync(p2, ct);

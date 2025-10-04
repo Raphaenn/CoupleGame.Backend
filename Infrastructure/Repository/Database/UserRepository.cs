@@ -8,15 +8,17 @@ namespace Infrastructure.Repository.Database;
 public class UserRepository : IUserRepository
 {
     private readonly DbSession _dbSession;
+    private readonly PostgresConnection _postgresConnection;
 
-    public UserRepository(DbSession dbSession)
+    public UserRepository(DbSession dbSession, PostgresConnection postgresConnection)
     {
         _dbSession = dbSession;
+        _postgresConnection = postgresConnection;
     }
 
     public async Task<User> CreateUser(User userData)
     {
-        var conn = await _dbSession.GetConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using (var command = new NpgsqlCommand())
         {
             command.Connection = conn;
@@ -33,7 +35,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User> SearchUser(Guid userId)
     {
-        var conn = await _dbSession.GetConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
         command.CommandText = "SELECT * FROM users WHERE id = @userId";
@@ -55,7 +57,7 @@ public class UserRepository : IUserRepository
 
     public async Task<List<User>> GetUserListByParams(string city)
     {
-        var conn = await _dbSession.GetConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
         command.CommandText = "SELECT * FROM users WHERE city = @city";
