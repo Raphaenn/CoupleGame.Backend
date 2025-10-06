@@ -7,6 +7,8 @@ namespace Application.Interfaces;
 public interface IRecommendationAppService
 {
     Task<IEnumerable<PersonRating>> GetRecommendationService(LadderId ladderId);
+    
+    Task<IEnumerable<PersonRating>> SimulateRecommendationService(LadderId ladderId);
 
     Task<Ladder> GetLadderById(string id, CancellationToken ct);
 
