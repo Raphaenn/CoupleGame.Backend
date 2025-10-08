@@ -1,6 +1,7 @@
 ﻿using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data.Connections;
+using Infrastructure.Models;
 using Npgsql;
 
 namespace Infrastructure.Repository.Database;
@@ -76,6 +77,37 @@ public class UserRepository : IUserRepository
             userList.Add(user);
         }
 
+        return userList;
+    }
+
+    public async Task<List<User>> GetUsersByRanking(Guid userId, string city, string sexualOrientation, int limit, CancellationToken ct)
+    {
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct);
+        await using var command = new NpgsqlCommand();
+        command.Connection = conn;
+        
+        limit = Math.Clamp(limit, 1, 200);
+        command.CommandText = "SELECT u.id, u.name, u.email, u.status FROM users u WHERE (@afterId IS NULL OR u.id > @afterId) AND city = @city ORDER BY u.id LIMIT @limit;";
+        
+        command.Parameters.AddWithValue("@afterId", userId);
+        command.Parameters.AddWithValue("@city", city);
+        command.Parameters.AddWithValue("@limit", limit);
+        
+        List<UserModel> items = new List<UserModel>(limit);
+        Guid? lastId = null;
+
+        var reader = await command.ExecuteReaderAsync(ct);
+
+        List<User> userList = new List<User>();
+        while (await reader.ReadAsync(ct))
+        {
+            Guid id = (Guid)reader["id"];
+            string name = reader["name"].ToString() ?? string.Empty;
+            string email = reader["email"].ToString() ?? string.Empty;
+
+            User user = User.Rehydrate(id, name, email);
+            userList.Add(user);
+        }
         return userList;
     }
 
