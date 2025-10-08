@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Interfaces;
 // using Application.UseCases;
 using Domain.Entities;
@@ -13,7 +14,7 @@ public class RecommendationAppService : IRecommendationAppService
     private readonly ILadderRepository _ladderRepository;
     private readonly IUserRepository _userRepository;
     private readonly IParticipantRatingRepository _recommendationRepository;
-    
+
     public RecommendationAppService(ILadderRepository ladderRepository, IUserRepository userRepository, IParticipantRatingRepository recommendationRepository)
     {
         _ladderRepository = ladderRepository;
@@ -21,7 +22,39 @@ public class RecommendationAppService : IRecommendationAppService
         _recommendationRepository = recommendationRepository;
     }
 
-    public async Task<IEnumerable<PersonRating>> GetRecommendationService(LadderId ladderId)
+    public async Task<CursorPage<UserDto>> GetRecommendationService(int size, RankingCursor? after, CancellationToken ct)
+    {
+        /* todo
+            List user by params (60%)
+            List users by ranking (30%)
+            List random users (10%)
+         */
+        // string city, string sexualOrientation, int limit, int sizePlusOne, decimal? lastScore, Guid? lastId
+        List<User> recommendation = new List<User>();
+        List<User> usersByParams = await _userRepository.GetUserListByParams("Niterói");
+        IEnumerable<User> usersByRanking = await _userRepository.GetUsersByRanking("Niterói", "Heterosexual", sizePlusOne: size + 1, lastScore: after?.LastScore, lastId: after?.LastId, ct);
+        
+        var hasNext = usersByRanking.ToList().Count > size;
+        var pageItems = (hasNext ? usersByRanking.Take(size) : usersByRanking).ToList();
+
+        var next = hasNext
+            ? new RankingCursor(
+                LastScore: pageItems[^1].Score,
+                LastId:    pageItems[^1].Id)
+            : null;
+        
+        
+        return new CursorPage<UserDto>(
+            pageItems.Select(u => new UserDto
+            {
+                Id = u.Id.ToString(),
+                Name = u.Name,
+                Email = u.Email
+            }).ToList(),
+            next);
+    }
+
+    public async Task<IEnumerable<PersonRating>> SimulateRecommendationService(LadderId ladderId)
     {
         List<User> users = await _userRepository.GetUserListByParams("Niterói");
         List<PersonRating> pRatingList = new List<PersonRating>();

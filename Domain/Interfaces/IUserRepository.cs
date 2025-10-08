@@ -7,5 +7,5 @@ public interface IUserRepository
     Task<User> SearchUser(Guid userId);
     Task<List<User>> GetUserListByParams(string city);
 
-    Task<List<User>> GetUsersByRanking(Guid userId, string city, string sexualOrientation, int limit, CancellationToken ct);
+    Task<IEnumerable<User>> GetUsersByRanking(string city, string sexualOrientation, int sizePlusOne, decimal? lastScore, Guid? lastId, CancellationToken ct);
 }

@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Domain.Entities;
 using Domain.Services;
 using Domain.ValueObjects;
@@ -6,7 +7,7 @@ namespace Application.Interfaces;
 
 public interface IRecommendationAppService
 {
-    Task<IEnumerable<PersonRating>> GetRecommendationService(LadderId ladderId);
+    Task<CursorPage<UserDto>> GetRecommendationService(int size, RankingCursor? after, CancellationToken ct);
     
     Task<IEnumerable<PersonRating>> SimulateRecommendationService(LadderId ladderId);
 

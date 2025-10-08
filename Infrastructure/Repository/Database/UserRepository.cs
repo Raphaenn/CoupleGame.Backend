@@ -80,22 +80,24 @@ public class UserRepository : IUserRepository
         return userList;
     }
 
-    public async Task<List<User>> GetUsersByRanking(Guid userId, string city, string sexualOrientation, int limit, CancellationToken ct)
+    public async Task<IEnumerable<User>> GetUsersByRanking(string city, string sexualOrientation, int sizePlusOne, decimal? lastScore, Guid? lastId, CancellationToken ct)
     {
         await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct);
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
         
-        limit = Math.Clamp(limit, 1, 200);
-        command.CommandText = "SELECT u.id, u.name, u.email, u.status FROM users u WHERE (@afterId IS NULL OR u.id > @afterId) AND city = @city ORDER BY u.id LIMIT @limit;";
+        command.CommandText = lastScore is null || lastId is null
+            ? "SELECT id, name, score, version FROM users ORDER BY score DESC, id DESC LIMIT @limit"
+            : "SELECT id, name, score, version FROM users WHERE (score, id) < (@lastScore, @lastId) ORDER BY score DESC, id DESC LIMIT @limit";
         
-        command.Parameters.AddWithValue("@afterId", userId);
-        command.Parameters.AddWithValue("@city", city);
-        command.Parameters.AddWithValue("@limit", limit);
+        command.Parameters.AddWithValue("@limit", sizePlusOne);
         
-        List<UserModel> items = new List<UserModel>(limit);
-        Guid? lastId = null;
-
+        if (lastScore is not null && lastId is not null)
+        {
+            command.Parameters.AddWithValue("lastScore", lastScore);
+            command.Parameters.AddWithValue("lastId", lastId);
+        }
+        
         var reader = await command.ExecuteReaderAsync(ct);
 
         List<User> userList = new List<User>();

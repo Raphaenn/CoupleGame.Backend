@@ -6,6 +6,7 @@ public class User
     public Guid Id { get; private set; }
     public string Name { get; private set; } = String.Empty;
     public string Email { get; private set; } = String.Empty;
+    public decimal Score { get; private set; }
 
     private readonly List<string> _photos = new List<string>();
     public IReadOnlyCollection<string> Photos => _photos.AsReadOnly();
@@ -30,5 +31,10 @@ public class User
     public void AddPhoto(string photo)
     {
         _photos.Add(photo);
+    }
+
+    public void AddScore(decimal currentScore)
+    {
+        this.Score = currentScore;
     }
 }
