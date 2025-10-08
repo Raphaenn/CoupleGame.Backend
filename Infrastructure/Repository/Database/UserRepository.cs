@@ -80,17 +80,19 @@ public class UserRepository : IUserRepository
         return userList;
     }
 
-    public async Task<IEnumerable<User>> GetUsersByRanking(string city, string sexualOrientation, int sizePlusOne, decimal? lastScore, Guid? lastId, CancellationToken ct)
+    public async Task<IEnumerable<User>> GetUsersByRanking(string city, string sO, int sizePlusOne, decimal? lastScore, Guid? lastId, CancellationToken ct)
     {
         await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct);
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
         
         command.CommandText = lastScore is null || lastId is null
-            ? "SELECT id, name, score, version FROM users ORDER BY score DESC, id DESC LIMIT @limit"
-            : "SELECT id, name, score, version FROM users WHERE (score, id) < (@lastScore, @lastId) ORDER BY score DESC, id DESC LIMIT @limit";
+            ? "SELECT id, name, score, version FROM users u LEFT JOIN user_photos p ON p.user_id = u.id ORDER BY score DESC, id DESC LIMIT @limit"
+            : "SELECT id, name, score, version FROM users u LEFT JOIN person_rating pr ON pr.user_id =u.id LEFT JOIN user_photos p ON p.user_id = u.id WHERE (u.score, u.id) < (@lastScore, @lastId) AND u.city = @city AND u.sexual_orientation = @sO ORDER BY score DESC, id DESC LIMIT @limit";
         
         command.Parameters.AddWithValue("@limit", sizePlusOne);
+        command.Parameters.AddWithValue("@city", city);
+        command.Parameters.AddWithValue("@sO", sO);
         
         if (lastScore is not null && lastId is not null)
         {

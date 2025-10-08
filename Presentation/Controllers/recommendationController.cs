@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Services;
@@ -12,6 +13,7 @@ public class RecommendationController : ControllerBase
 {
 
     public record struct VoteRequest(string LadderId, string UserId, string User2Id, InteractionType Interaction, string Idp);
+    public record struct GetRecRequest(decimal LScore, string UserId);
     
     // todo - apply app service
     private readonly IRecommendationAppService _recommendationAppService;
@@ -21,13 +23,14 @@ public class RecommendationController : ControllerBase
         _recommendationAppService = recommendationAppService;
     }
     
-    [HttpGet("/ladder/{id}")]
-    public async Task<ActionResult> GetRecommendation([FromRoute] string id, CancellationToken ct)
+    [HttpGet("/")]
+    public async Task<ActionResult> GetRecommendation([FromRoute] GetRecRequest req, CancellationToken ct)
     {
         try
         {
-            Ladder response = await _recommendationAppService.GetLadderById(id, ct);
-            return Ok(response);
+            var cursor = new RankingCursor(req.LScore, Guid.Parse(req.UserId));
+            var res = await _recommendationAppService.GetRecommendationService(5, cursor, ct);
+            return Ok(res);
         }
         catch (Exception e)
         {
@@ -35,20 +38,6 @@ public class RecommendationController : ControllerBase
         }
     }
     
-    [HttpGet("/ranking")]
-    public async Task<ActionResult> GetList(CancellationToken ct)
-    {
-        try
-        {
-            LadderId ladderId = new LadderId(Guid.Parse("550e8400-e29b-41d4-a716-446655440000"));
-            var list = await _recommendationAppService.GetRecommendationService(ladderId);
-            return Ok(list);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
-    }
 
     [HttpPost("/vote/register")]
     public async Task<ActionResult> RegisterVote([FromBody] VoteRequest req, CancellationToken ct)
