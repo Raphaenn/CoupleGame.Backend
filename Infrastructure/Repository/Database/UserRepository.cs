@@ -1,5 +1,7 @@
-﻿using Domain.Entities;
+﻿using System.Text.Json;
+using Domain.Entities;
 using Domain.Interfaces;
+using Domain.ValueObjects;
 using Infrastructure.Data.Connections;
 using Infrastructure.Models;
 using Npgsql;
@@ -86,31 +88,110 @@ public class UserRepository : IUserRepository
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
         
-        command.CommandText = lastScore is null || lastId is null
-            ? "SELECT id, name, score, version FROM users u LEFT JOIN user_photos p ON p.user_id = u.id ORDER BY score DESC, id DESC LIMIT @limit"
-            : "SELECT id, name, score, version FROM users u LEFT JOIN person_rating pr ON pr.user_id =u.id LEFT JOIN user_photos p ON p.user_id = u.id WHERE (u.score, u.id) < (@lastScore, @lastId) AND u.city = @city AND u.sexual_orientation = @sO ORDER BY score DESC, id DESC LIMIT @limit";
+        var firstPage = lastScore is null && lastId is null;
+
+        command.CommandText = !firstPage
+            ? """
+              SELECT
+                u.id,
+                u.name,
+                u.email,
+                pr.rating,
+                COALESCE(
+                  json_agg(
+                    json_build_object(
+                      'id', p.id,
+                      'url', p.url,
+                      'created_at', p.created_at
+                    )
+                    ORDER BY p.created_at DESC
+                  ) FILTER (WHERE p.id IS NOT NULL),
+                  '[]'::json
+                ) AS photos
+              FROM users u
+              INNER JOIN user_photo p ON p.user_id = u.id
+              INNER JOIN person_rating pr ON pr.user_id = u.id
+              WHERE
+              (
+                  pr.rating < $1
+                  OR (pr.rating = $1 AND u.id < $2)
+              )
+              AND u.city = $3 AND u.sexual_orientation = $4
+              GROUP BY u.id, u.name, u.email, pr.rating
+              ORDER BY pr.rating DESC, u.id DESC
+              LIMIT $5;
+              """
+            : """
+              SELECT
+                u.id,
+                u.name,
+                u.email,
+                pr.rating,
+                COALESCE(
+                  json_agg(
+                    json_build_object(
+                      'id', p.id,
+                      'url', p.url,
+                      'created_at', p.created_at
+                    )
+                    ORDER BY p.created_at DESC
+                  ) FILTER (WHERE p.id IS NOT NULL),
+                  '[]'::json
+                ) AS photos
+              FROM users u
+              INNER JOIN user_photo p ON p.user_id = u.id
+              LEFT JOIN person_rating pr ON pr.user_id = u.id
+              WHERE u.city = @city AND u.sexual_orientation = @sO
+              GROUP BY u.id, u.name, u.email, pr.rating
+              ORDER BY pr.rating DESC, u.id DESC
+              LIMIT @limit;
+              """;
         
-        command.Parameters.AddWithValue("@limit", sizePlusOne);
-        command.Parameters.AddWithValue("@city", city);
-        command.Parameters.AddWithValue("@sO", sO);
-        
-        if (lastScore is not null && lastId is not null)
+        if (firstPage)
         {
-            command.Parameters.AddWithValue("lastScore", lastScore);
-            command.Parameters.AddWithValue("lastId", lastId);
+            command.Parameters.AddWithValue("city", city);
+            command.Parameters.AddWithValue("sO", sO);
+            command.Parameters.AddWithValue("limit", sizePlusOne);
+        }
+        else
+        {
+            command.Parameters.AddWithValue("$1", lastScore);
+            command.Parameters.AddWithValue("$2", lastId);
+            command.Parameters.AddWithValue("$3", city);
+            command.Parameters.AddWithValue("$4", sO);
+            command.Parameters.AddWithValue("$5", sizePlusOne);
         }
         
-        var reader = await command.ExecuteReaderAsync(ct);
-
         List<User> userList = new List<User>();
+        
+        var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
         {
-            Guid id = (Guid)reader["id"];
-            string name = reader["name"].ToString() ?? string.Empty;
-            string email = reader["email"].ToString() ?? string.Empty;
+            Guid id    = (Guid)reader["id"];
+            string name  = reader["name"].ToString();
+            string email  = reader["email"].ToString();
+            decimal? rating = reader["rating"] is DBNull ? null : (decimal)reader["rating"];
 
-            User user = User.Rehydrate(id, name, email);
-            userList.Add(user);
+            // A coluna 4 é JSON (texto) com o array de fotos
+            string photosJson = reader.IsDBNull(reader.GetOrdinal("photos"))
+                ? "[]"
+                : reader.GetString(reader.GetOrdinal("photos"));
+
+            // Deserializa para List<PhotoDto>
+            var photos = JsonSerializer.Deserialize<List<PhotoDto>>(
+                photosJson,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new List<PhotoDto>();
+
+            User addedUser = User.Rehydrate(id, name, email);
+            addedUser.AddScore(rating ?? 1500);
+            photos.ForEach(p =>
+            {
+                UserPhotos parsed = new UserPhotos(p.Id.ToString(), p.Url);
+                addedUser.AddPhoto(parsed);
+            });
+            
+            userList.Add(addedUser);
         }
         return userList;
     }

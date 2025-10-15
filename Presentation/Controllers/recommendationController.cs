@@ -13,7 +13,7 @@ public class RecommendationController : ControllerBase
 {
 
     public record struct VoteRequest(string LadderId, string UserId, string User2Id, InteractionType Interaction, string Idp);
-    public record struct GetRecRequest(decimal LScore, string UserId);
+    public record struct GetRecRequest(string City, string Sexuality, decimal? LScore, Guid? UserId);
     
     // todo - apply app service
     private readonly IRecommendationAppService _recommendationAppService;
@@ -23,13 +23,13 @@ public class RecommendationController : ControllerBase
         _recommendationAppService = recommendationAppService;
     }
     
-    [HttpGet("/")]
-    public async Task<ActionResult> GetRecommendation([FromRoute] GetRecRequest req, CancellationToken ct)
+    [HttpPost("/list")]
+    public async Task<ActionResult> GetRecommendation([FromBody] GetRecRequest req, CancellationToken ct)
     {
         try
         {
-            var cursor = new RankingCursor(req.LScore, Guid.Parse(req.UserId));
-            var res = await _recommendationAppService.GetRecommendationService(5, cursor, ct);
+            var cursor = new RankingCursor(req.LScore, req.UserId);
+            var res = await _recommendationAppService.GetRecommendationService(req.City, req.Sexuality, 5, cursor, ct);
             return Ok(res);
         }
         catch (Exception e)

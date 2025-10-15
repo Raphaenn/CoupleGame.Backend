@@ -22,17 +22,11 @@ public class RecommendationAppService : IRecommendationAppService
         _recommendationRepository = recommendationRepository;
     }
 
-    public async Task<CursorPage<UserDto>> GetRecommendationService(int size, RankingCursor? after, CancellationToken ct)
+    public async Task<CursorPage<UserDto>> GetRecommendationService(string city, string sexuality, int size, RankingCursor? after, CancellationToken ct)
     {
-        /* todo
-            List user by params (60%)
-            List users by ranking (30%)
-            List random users (10%)
-         */
-        // string city, string sexualOrientation, int limit, int sizePlusOne, decimal? lastScore, Guid? lastId
-        List<User> recommendation = new List<User>();
-        List<User> usersByParams = await _userRepository.GetUserListByParams("Niterói");
-        IEnumerable<User> usersByRanking = await _userRepository.GetUsersByRanking("Niterói", "Heterosexual", sizePlusOne: size + 1, lastScore: after?.LastScore, lastId: after?.LastId, ct);
+        // List<User> recommendation = new List<User>();
+        List<User> usersByParams = await _userRepository.GetUserListByParams(city);
+        IEnumerable<User> usersByRanking = await _userRepository.GetUsersByRanking(city, sexuality, sizePlusOne: size + 1, lastScore: after?.LastScore, lastId: after?.LastId, ct);
         
         var hasNext = usersByRanking.ToList().Count > size;
         var pageItems = (hasNext ? usersByRanking.Take(size) : usersByRanking).ToList();
@@ -49,7 +43,9 @@ public class RecommendationAppService : IRecommendationAppService
             {
                 Id = u.Id.ToString(),
                 Name = u.Name,
-                Email = u.Email
+                Email = u.Email,
+                Rating = u.Score,
+                Photos = u.Photos.Select(p => p.Url).ToList()
             }).ToList(),
             next);
     }

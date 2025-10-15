@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using Domain.ValueObjects;
 
 namespace Domain.Entities;
 public class User
@@ -8,8 +8,8 @@ public class User
     public string Email { get; private set; } = String.Empty;
     public decimal Score { get; private set; }
 
-    private readonly List<string> _photos = new List<string>();
-    public IReadOnlyCollection<string> Photos => _photos.AsReadOnly();
+    private readonly List<UserPhotos> _photos = new List<UserPhotos>();
+    public IReadOnlyCollection<UserPhotos> Photos => _photos.AsReadOnly();
 
     public User(Guid id, string name, string email)
     {
@@ -28,7 +28,7 @@ public class User
         return this.Email = email;
     }
     
-    public void AddPhoto(string photo)
+    public void AddPhoto(UserPhotos photo)
     {
         _photos.Add(photo);
     }
