@@ -22,13 +22,20 @@ public class RecommendationAppService : IRecommendationAppService
         _recommendationRepository = recommendationRepository;
     }
 
-    public async Task<CursorPage<UserDto>> GetRecommendationService(string city, string sexuality, int size, RankingCursor? after, CancellationToken ct)
+    public async Task<CursorPage<UserDto>> GetRecommendationService(string city, string sexuality, string sexualOrientation, int size, RankingCursor? after, CancellationToken ct)
     {
-        // List<User> recommendation = new List<User>();
-        List<User> usersByParams = await _userRepository.GetUserListByParams(city);
-        IEnumerable<User> usersByRanking = await _userRepository.GetUsersByRanking(city, sexuality, sizePlusOne: size + 1, lastScore: after?.LastScore, lastId: after?.LastId, ct);
+        IEnumerable<User> usersByParams = await _userRepository.GetUsersByParams("Niteroi", "Male", "Heterosexual", null, null);
+        IEnumerable<User> usersByRanking = await _userRepository.GetUsersByRanking(city, sexuality, sexualOrientation, sizePlusOne: size + 1, lastScore: after?.LastScore, lastId: after?.LastId, ct);
+        
+        /*  Factory
+         * Transform the repository requests into params list
+         * Rules: 70% com base no Elo (exploit)
+           20% perfis novos/recém-criados (explore)
+           10% aleatórios controlados para não engessar
+         */
         
         var hasNext = usersByRanking.ToList().Count > size;
+        var newL = usersByParams.Concat(usersByRanking).DistinctBy(u => u.Id);
         var pageItems = (hasNext ? usersByRanking.Take(size) : usersByRanking).ToList();
 
         var next = hasNext
@@ -39,7 +46,7 @@ public class RecommendationAppService : IRecommendationAppService
         
         
         return new CursorPage<UserDto>(
-            pageItems.Select(u => new UserDto
+            newL.Select(u => new UserDto
             {
                 Id = u.Id.ToString(),
                 Name = u.Name,
@@ -52,7 +59,7 @@ public class RecommendationAppService : IRecommendationAppService
 
     public async Task<IEnumerable<PersonRating>> SimulateRecommendationService(LadderId ladderId)
     {
-        List<User> users = await _userRepository.GetUserListByParams("Niterói");
+        IEnumerable<User> users = await _userRepository.GetUsersByParams("Niterói", "Male", "Heterossexual", null, null);
         List<PersonRating> pRatingList = new List<PersonRating>();
         // MatchVote vote = new MatchVote();
         List<PersonRating> ranking = new List<PersonRating>();

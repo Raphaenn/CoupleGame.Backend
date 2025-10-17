@@ -58,17 +58,66 @@ public class UserRepository : IUserRepository
         return null;
     }
 
-    public async Task<List<User>> GetUserListByParams(string city)
+    public async Task<IReadOnlyList<User>> GetUsersByParams(string city, string sexuality, string sexualOrientation, double? height, double? weight)
     {
         await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
-        command.CommandText = "SELECT * FROM users WHERE city = @city";
-        command.Parameters.AddWithValue("@city", city);
 
-        var reader = await command.ExecuteReaderAsync();
-
+        if (height is not null || weight is not null)
+        {
+            command.CommandText = """
+              SELECT u.id, u.Name, u.Email,
+              COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', p.id,
+                        'url', p.url
+                    )
+                ) FILTER ( WHERE p.id IS NOT NULL),
+                '[]'::json
+              )  AS photos
+              FROM users u
+              INNER JOIN user_photo p ON p.user_id = u.id
+              WHERE u.city = @city AND u.sexuality = @sexuality AND u.sexual_orientation = @sO AND height = @height AND weight = @weight
+              GROUP BY u.id, u.name, u.email
+              LIMIT 5;
+              """;
+            
+            command.Parameters.AddWithValue("@city", city);
+            command.Parameters.AddWithValue("@sexuality", sexuality);
+            command.Parameters.AddWithValue("@sO", sexualOrientation);
+            command.Parameters.AddWithValue("@height", height);
+            command.Parameters.AddWithValue("@weight", weight);
+            
+        }
+        else
+        {
+            command.CommandText = """
+              SELECT u.id, u.Name, u.Email, 
+              COALESCE(
+                json_agg(
+                    json_build_object(
+                        'id', p.id,
+                        'url', p.url
+                    )
+                ) FILTER ( WHERE p.id IS NOT NULL),
+                '[]'::json
+              )  AS photos
+              FROM users u
+              INNER JOIN user_photo p ON p.user_id = u.id
+              WHERE u.city = @city AND u.sexuality = @sexuality AND u.sexual_orientation = @sO
+              GROUP BY u.id, u.name, u.email
+              LIMIT 5;
+              """;
+            
+            command.Parameters.AddWithValue("@city", city);
+            command.Parameters.AddWithValue("@sexuality", sexuality);
+            command.Parameters.AddWithValue("@sO", sexualOrientation);
+        }
+        
         List<User> userList = new List<User>();
+        var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
             Guid id = (Guid)reader["id"];
@@ -82,7 +131,7 @@ public class UserRepository : IUserRepository
         return userList;
     }
 
-    public async Task<IEnumerable<User>> GetUsersByRanking(string city, string sO, int sizePlusOne, decimal? lastScore, Guid? lastId, CancellationToken ct)
+    public async Task<IReadOnlyList<User>> GetUsersByRanking(string city, string sexuality, string sO, int sizePlusOne, decimal? lastScore, Guid? lastId, CancellationToken ct)
     {
         await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct);
         await using var command = new NpgsqlCommand();
@@ -116,7 +165,7 @@ public class UserRepository : IUserRepository
                   pr.rating < $1
                   OR (pr.rating = $1 AND u.id < $2)
               )
-              AND u.city = $3 AND u.sexual_orientation = $4
+              AND u.city = $3 AND u.sexual_orientation = $4 AND u.sexuality = $6
               GROUP BY u.id, u.name, u.email, pr.rating
               ORDER BY pr.rating DESC, u.id DESC
               LIMIT $5;
@@ -141,7 +190,7 @@ public class UserRepository : IUserRepository
               FROM users u
               INNER JOIN user_photo p ON p.user_id = u.id
               LEFT JOIN person_rating pr ON pr.user_id = u.id
-              WHERE u.city = @city AND u.sexual_orientation = @sO
+              WHERE u.city = @city AND u.sexual_orientation = @sO AND u.sexuality = @sexuality
               GROUP BY u.id, u.name, u.email, pr.rating
               ORDER BY pr.rating DESC, u.id DESC
               LIMIT @limit;
@@ -150,6 +199,7 @@ public class UserRepository : IUserRepository
         if (firstPage)
         {
             command.Parameters.AddWithValue("city", city);
+            command.Parameters.AddWithValue("sexuality", sexuality);
             command.Parameters.AddWithValue("sO", sO);
             command.Parameters.AddWithValue("limit", sizePlusOne);
         }
@@ -160,6 +210,7 @@ public class UserRepository : IUserRepository
             command.Parameters.AddWithValue("$3", city);
             command.Parameters.AddWithValue("$4", sO);
             command.Parameters.AddWithValue("$5", sizePlusOne);
+            command.Parameters.AddWithValue("$6", sexuality);
         }
         
         List<User> userList = new List<User>();

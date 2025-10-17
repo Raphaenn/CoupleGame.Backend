@@ -13,7 +13,7 @@ public class RecommendationController : ControllerBase
 {
 
     public record struct VoteRequest(string LadderId, string UserId, string User2Id, InteractionType Interaction, string Idp);
-    public record struct GetRecRequest(string City, string Sexuality, decimal? LScore, Guid? UserId);
+    public record struct GetRecRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid? UserId);
     
     // todo - apply app service
     private readonly IRecommendationAppService _recommendationAppService;
@@ -29,7 +29,7 @@ public class RecommendationController : ControllerBase
         try
         {
             var cursor = new RankingCursor(req.LScore, req.UserId);
-            var res = await _recommendationAppService.GetRecommendationService(req.City, req.Sexuality, 5, cursor, ct);
+            var res = await _recommendationAppService.GetRecommendationService(req.City, req.Sexuality, req.SexualOrientation, 5, cursor, ct);
             return Ok(res);
         }
         catch (Exception e)
