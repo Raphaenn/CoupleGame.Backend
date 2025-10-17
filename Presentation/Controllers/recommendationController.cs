@@ -28,8 +28,8 @@ public class RecommendationController : ControllerBase
     {
         try
         {
-            var cursor = new RankingCursor(req.LScore, req.UserId);
-            var res = await _recommendationAppService.GetRecommendationService(req.City, req.Sexuality, req.SexualOrientation, 5, cursor, ct);
+            var cursor = new RankingCursor(req.LScore, req.UserId, null);
+            var res = await _recommendationAppService.GetRecommendationService(req.City, req.Sexuality, req.SexualOrientation, 10, cursor, ct);
             return Ok(res);
         }
         catch (Exception e)

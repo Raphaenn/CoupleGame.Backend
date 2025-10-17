@@ -58,9 +58,9 @@ public class UserRepository : IUserRepository
         return null;
     }
 
-    public async Task<IReadOnlyList<User>> GetUsersByParams(string city, string sexuality, string sexualOrientation, double? height, double? weight)
+    public async Task<IReadOnlyList<User>> GetUsersByParams(string city, string sexuality, string sexualOrientation, double? height, double? weight, int size, CancellationToken ct)
     {
-        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct);
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
 
@@ -81,7 +81,7 @@ public class UserRepository : IUserRepository
               INNER JOIN user_photo p ON p.user_id = u.id
               WHERE u.city = @city AND u.sexuality = @sexuality AND u.sexual_orientation = @sO AND height = @height AND weight = @weight
               GROUP BY u.id, u.name, u.email
-              LIMIT 5;
+              LIMIT @size;
               """;
             
             command.Parameters.AddWithValue("@city", city);
@@ -89,6 +89,7 @@ public class UserRepository : IUserRepository
             command.Parameters.AddWithValue("@sO", sexualOrientation);
             command.Parameters.AddWithValue("@height", height);
             command.Parameters.AddWithValue("@weight", weight);
+            command.Parameters.AddWithValue("@size", size);
             
         }
         else
@@ -108,17 +109,18 @@ public class UserRepository : IUserRepository
               INNER JOIN user_photo p ON p.user_id = u.id
               WHERE u.city = @city AND u.sexuality = @sexuality AND u.sexual_orientation = @sO
               GROUP BY u.id, u.name, u.email
-              LIMIT 5;
+              LIMIT @size;
               """;
             
             command.Parameters.AddWithValue("@city", city);
             command.Parameters.AddWithValue("@sexuality", sexuality);
             command.Parameters.AddWithValue("@sO", sexualOrientation);
+            command.Parameters.AddWithValue("@size", size);
         }
         
         List<User> userList = new List<User>();
-        var reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
+        var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
         {
             Guid id = (Guid)reader["id"];
             string name = reader["name"].ToString() ?? string.Empty;

@@ -24,8 +24,8 @@ public class RecommendationAppService : IRecommendationAppService
 
     public async Task<CursorPage<UserDto>> GetRecommendationService(string city, string sexuality, string sexualOrientation, int size, RankingCursor? after, CancellationToken ct)
     {
-        IEnumerable<User> usersByParams = await _userRepository.GetUsersByParams("Niteroi", "Male", "Heterosexual", null, null);
-        IEnumerable<User> usersByRanking = await _userRepository.GetUsersByRanking(city, sexuality, sexualOrientation, sizePlusOne: size + 1, lastScore: after?.LastScore, lastId: after?.LastId, ct);
+        Task<IReadOnlyList<User>> usersByRanking = _userRepository.GetUsersByRanking(city, sexuality, sexualOrientation, sizePlusOne: size - 4, lastScore: after?.LastScore, lastId: after?.LastId, ct);
+        Task<IReadOnlyList<User>> usersByParams = _userRepository.GetUsersByParams(city, sexuality, sexualOrientation, null, null, sizePlusOne: size - 6, ct);
         
         /*  Factory
          * Transform the repository requests into params list
@@ -34,19 +34,24 @@ public class RecommendationAppService : IRecommendationAppService
            10% aleatórios controlados para não engessar
          */
         
-        var hasNext = usersByRanking.ToList().Count > size;
-        var newL = usersByParams.Concat(usersByRanking).DistinctBy(u => u.Id);
-        var pageItems = (hasNext ? usersByRanking.Take(size) : usersByRanking).ToList();
+        IReadOnlyList<User>[] results = await Task.WhenAll(usersByParams, usersByRanking);
+        var usersByParamsResult  = results[0];
+        var usersByRankingResult = results[1];
 
-        var next = hasNext
-            ? new RankingCursor(
-                LastScore: pageItems[^1].Score,
-                LastId:    pageItems[^1].Id)
-            : null;
+        var parsedRes = usersByParamsResult.Concat(usersByRankingResult).DistinctBy(u => u.Id).ToList();
         
+        // var pageItems = (hasNext ? usersByRanking.Take(size) : usersByRanking).ToList();
+        //
+        // var next = hasNext
+        //     ? new RankingCursor(
+        //         LastScore: pageItems[^1].Score,
+        //         LastId:    pageItems[^1].Id)
+        //     : null;
+
+        RankingCursor cursor = new RankingCursor(after?.LastScore, after?.LastId, parsedRes.Count);
         
         return new CursorPage<UserDto>(
-            newL.Select(u => new UserDto
+            parsedRes.Select(u => new UserDto
             {
                 Id = u.Id.ToString(),
                 Name = u.Name,
@@ -54,12 +59,12 @@ public class RecommendationAppService : IRecommendationAppService
                 Rating = u.Score,
                 Photos = u.Photos.Select(p => p.Url).ToList()
             }).ToList(),
-            next);
+            cursor);
     }
 
-    public async Task<IEnumerable<PersonRating>> SimulateRecommendationService(LadderId ladderId)
+    public async Task<IEnumerable<PersonRating>> SimulateRecommendationService(LadderId ladderId, int size, CancellationToken ct)
     {
-        IEnumerable<User> users = await _userRepository.GetUsersByParams("Niterói", "Male", "Heterossexual", null, null);
+        IEnumerable<User> users = await _userRepository.GetUsersByParams("Niterói", "Male", "Heterosexual", null, null, 10, ct);
         List<PersonRating> pRatingList = new List<PersonRating>();
         // MatchVote vote = new MatchVote();
         List<PersonRating> ranking = new List<PersonRating>();
