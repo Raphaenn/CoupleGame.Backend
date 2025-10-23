@@ -48,11 +48,14 @@ public class UserRepository : IUserRepository
 
         while (await reader.ReadAsync())
         {
-            Guid id = Guid.Parse(reader["id"].ToString());
-            string name = reader["name"].ToString();
-            string email = reader["email"].ToString();
+            Guid id = (Guid)reader["id"];
+            string name = reader["name"].ToString() ?? string.Empty;
+            string email = reader["email"].ToString() ?? string.Empty;
+            DateTime birthDate = (DateTime)reader["birthdate"];
+            double uHeight = (double)reader["height"];
+            double uWeight = (double)reader["weight"];
 
-            User user = User.Rehydrate(id, name, email);
+            User user = User.Rehydrate(id, name, email, uHeight, uWeight, birthDate);
             return user;
         }
         return null;
@@ -67,7 +70,7 @@ public class UserRepository : IUserRepository
         if (height is not null || weight is not null)
         {
             command.CommandText = """
-              SELECT u.id, u.Name, u.Email,
+              SELECT u.id, u.name, u.email, u.birthdate, u.height, u.weight,
               COALESCE(
                 json_agg(
                     json_build_object(
@@ -80,7 +83,7 @@ public class UserRepository : IUserRepository
               FROM users u
               INNER JOIN user_photo p ON p.user_id = u.id
               WHERE u.city = @city AND u.sexuality = @sexuality AND u.sexual_orientation = @sO AND height = @height AND weight = @weight
-              GROUP BY u.id, u.name, u.email
+              GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight
               LIMIT @size;
               """;
             
@@ -95,7 +98,7 @@ public class UserRepository : IUserRepository
         else
         {
             command.CommandText = """
-              SELECT u.id, u.Name, u.Email, 
+              SELECT u.id, u.name, u.email, u.birthdate, u.height, u.weight,
               COALESCE(
                 json_agg(
                     json_build_object(
@@ -108,7 +111,7 @@ public class UserRepository : IUserRepository
               FROM users u
               INNER JOIN user_photo p ON p.user_id = u.id
               WHERE u.city = @city AND u.sexuality = @sexuality AND u.sexual_orientation = @sO
-              GROUP BY u.id, u.name, u.email
+              GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight
               LIMIT @size;
               """;
             
@@ -125,8 +128,11 @@ public class UserRepository : IUserRepository
             Guid id = (Guid)reader["id"];
             string name = reader["name"].ToString() ?? string.Empty;
             string email = reader["email"].ToString() ?? string.Empty;
+            DateTime birthDate = (DateTime)reader["birthdate"];
+            double uHeight = reader["height"] == DBNull.Value ? 0.0 : Convert.ToDouble(reader["height"]);
+            double uWeight = reader["weight"] == DBNull.Value ? 0.0 : Convert.ToDouble(reader["weight"]);
 
-            User user = User.Rehydrate(id, name, email);
+            User user = User.Rehydrate(id, name, email, uHeight, uWeight, birthDate);
             userList.Add(user);
         }
 
@@ -147,6 +153,9 @@ public class UserRepository : IUserRepository
                 u.id,
                 u.name,
                 u.email,
+                u.birthdate,
+                u.height, 
+                u.weight,
                 pr.rating,
                 COALESCE(
                   json_agg(
@@ -168,7 +177,7 @@ public class UserRepository : IUserRepository
                   OR (pr.rating = $1 AND u.id < $2)
               )
               AND u.city = $3 AND u.sexual_orientation = $4 AND u.sexuality = $6
-              GROUP BY u.id, u.name, u.email, pr.rating
+              GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight, pr.rating
               ORDER BY pr.rating DESC, u.id DESC
               LIMIT $5;
               """
@@ -177,6 +186,9 @@ public class UserRepository : IUserRepository
                 u.id,
                 u.name,
                 u.email,
+                u.birthdate,
+                u.height, 
+                u.weight,
                 pr.rating,
                 COALESCE(
                   json_agg(
@@ -193,7 +205,7 @@ public class UserRepository : IUserRepository
               INNER JOIN user_photo p ON p.user_id = u.id
               LEFT JOIN person_rating pr ON pr.user_id = u.id
               WHERE u.city = @city AND u.sexual_orientation = @sO AND u.sexuality = @sexuality
-              GROUP BY u.id, u.name, u.email, pr.rating
+              GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight, pr.rating
               ORDER BY pr.rating DESC, u.id DESC
               LIMIT @limit;
               """;
@@ -220,9 +232,13 @@ public class UserRepository : IUserRepository
         var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
         {
-            Guid id    = (Guid)reader["id"];
-            string name  = reader["name"].ToString();
-            string email  = reader["email"].ToString();
+            Guid id = (Guid)reader["id"];
+            string name = reader["name"].ToString() ?? string.Empty;
+            string email = reader["email"].ToString() ?? string.Empty;
+            DateTime birthDate = (DateTime)reader["birthdate"];
+            double uHeight = reader["height"] == DBNull.Value ? 0.0 : Convert.ToDouble(reader["height"]);
+            double uWeight = reader["weight"] == DBNull.Value ? 0.0 : Convert.ToDouble(reader["weight"]);
+
             decimal? rating = reader["rating"] is DBNull ? null : (decimal)reader["rating"];
 
             // A coluna 4 é JSON (texto) com o array de fotos
@@ -236,7 +252,7 @@ public class UserRepository : IUserRepository
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             ) ?? new List<PhotoDto>();
 
-            User addedUser = User.Rehydrate(id, name, email);
+            User addedUser = User.Rehydrate(id, name, email, uHeight, uWeight, birthDate);
             addedUser.AddScore(rating ?? 1500);
             photos.ForEach(p =>
             {

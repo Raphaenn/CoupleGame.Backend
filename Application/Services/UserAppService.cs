@@ -14,24 +14,6 @@ public class UserAppService : IUserAppService
         _userRepository = userRepository;
     }
 
-    public async Task<UserDto> CreateUser(UserDto user)
-    {
-        try
-        {
-            Guid userId = Guid.NewGuid();
-            User createdUser = new User(id: userId, name: user.Name, email: user.Email);
-
-            await _userRepository.CreateUser(createdUser);
-            
-            user.Id = userId.ToString();
-            return user;
-        }
-        catch (Exception e)
-        {
-            throw new Exception(e.Message);
-        }
-    }
-
     public async Task<UserDto> SearchUserService(string id)
     {
         try
