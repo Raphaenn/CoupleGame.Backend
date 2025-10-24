@@ -131,9 +131,26 @@ public class UserRepository : IUserRepository
             DateTime birthDate = (DateTime)reader["birthdate"];
             double uHeight = reader["height"] == DBNull.Value ? 0.0 : Convert.ToDouble(reader["height"]);
             double uWeight = reader["weight"] == DBNull.Value ? 0.0 : Convert.ToDouble(reader["weight"]);
+            
+            // A coluna 4 é JSON (texto) com o array de fotos
+            string photosJson = reader.IsDBNull(reader.GetOrdinal("photos"))
+                ? "[]"
+                : reader.GetString(reader.GetOrdinal("photos"));
+
+            // Deserializa para List<PhotoDto>
+            var photos = JsonSerializer.Deserialize<List<PhotoDto>>(
+                photosJson,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new List<PhotoDto>();
 
             User user = User.Rehydrate(id, name, email, uHeight, uWeight, birthDate);
             userList.Add(user);
+            
+            photos.ForEach(p =>
+            {
+                UserPhotos parsed = new UserPhotos(p.Id.ToString(), p.Url);
+                user.AddPhoto(parsed);
+            });
         }
 
         return userList;
