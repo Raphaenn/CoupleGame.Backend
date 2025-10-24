@@ -7,7 +7,6 @@ namespace Api.Controllers;
 
 [ApiController]
 [Route("[controller]/api")]
-
 public class QuizController : ControllerBase
 {
     private readonly IQuizAppService _quizAppService;

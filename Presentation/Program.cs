@@ -6,8 +6,6 @@ using Infrastructure.Data.Connections;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -84,6 +82,7 @@ builder.Services.AddQuizServices();
 builder.Services.AddAnswerServices();
 builder.Services.AddInviteServices();
 builder.Services.AddRecommendationServices();
+builder.Services.AddInteractionServices();
 
 // Configure CORS
 builder.Services.AddCors(options =>

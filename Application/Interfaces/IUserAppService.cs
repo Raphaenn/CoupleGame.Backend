@@ -4,7 +4,7 @@ namespace Application.Interfaces;
 
 public interface IUserAppService
 {
-    Task<UserDto> CreateUser(UserDto user);
+    // Task<UserDto> CreateUser(UserDto user);
     
     Task<UserDto> SearchUserService(string id);
 }

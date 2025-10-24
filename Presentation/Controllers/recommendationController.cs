@@ -11,9 +11,9 @@ namespace Api.Controllers;
 [Route("[controller]")]
 public class RecommendationController : ControllerBase
 {
-
     public record struct VoteRequest(string LadderId, string UserId, string User2Id, InteractionType Interaction, string Idp);
     public record struct GetRecRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid? UserId);
+    public record struct InteractionRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid? UserId);
     
     // todo - apply app service
     private readonly IRecommendationAppService _recommendationAppService;
@@ -23,13 +23,13 @@ public class RecommendationController : ControllerBase
         _recommendationAppService = recommendationAppService;
     }
     
-    [HttpPost("/list")]
-    public async Task<ActionResult> GetRecommendation([FromBody] GetRecRequest req, CancellationToken ct)
+    [HttpPost("list")]
+    public async Task<ActionResult<CursorPage<UserDto>>> GetRecommendation([FromBody] GetRecRequest req, CancellationToken ct)
     {
         try
         {
             var cursor = new RankingCursor(req.LScore, req.UserId, null);
-            var res = await _recommendationAppService.GetRecommendationService(req.City, req.Sexuality, req.SexualOrientation, 10, cursor, ct);
+            CursorPage<UserDto> res = await _recommendationAppService.GetRecommendationService(req.City, req.Sexuality, req.SexualOrientation, 10, cursor, ct);
             return Ok(res);
         }
         catch (Exception e)
@@ -39,7 +39,7 @@ public class RecommendationController : ControllerBase
     }
     
 
-    [HttpPost("/vote/register")]
+    [HttpPost("vote/register")]
     public async Task<ActionResult> RegisterVote([FromBody] VoteRequest req, CancellationToken ct)
     {
         try
@@ -48,6 +48,19 @@ public class RecommendationController : ControllerBase
             Guid parsedUserId = Guid.Parse(req.UserId);
             Guid parsedUser2Id = Guid.Parse(req.User2Id);
             await _recommendationAppService.RecordVoteService(parsedLadder, parsedUserId, parsedUser2Id, req.Interaction, req.Idp, ct);
+            return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPost("/users/interaction")]
+    public async Task<ActionResult<UserDto>> Interaction([FromBody] InteractionRequest req, CancellationToken ct)
+    {
+        try
+        {
             return Ok();
         }
         catch (Exception e)

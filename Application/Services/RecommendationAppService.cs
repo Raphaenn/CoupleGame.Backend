@@ -33,7 +33,6 @@ public class RecommendationAppService : IRecommendationAppService
            20% perfis novos/recém-criados (explore)
            10% aleatórios controlados para não engessar
          */
-        
         IReadOnlyList<User>[] results = await Task.WhenAll(usersByParams, usersByRanking);
         var usersByParamsResult  = results[0];
         var usersByRankingResult = results[1];
@@ -56,6 +55,9 @@ public class RecommendationAppService : IRecommendationAppService
                 Id = u.Id.ToString(),
                 Name = u.Name,
                 Email = u.Email,
+                BirthDate = u.BirthDate,
+                Height = u.Height,
+                Weight = u.Weight,
                 Rating = u.Score,
                 Photos = u.Photos.Select(p => p.Url).ToList()
             }).ToList(),
