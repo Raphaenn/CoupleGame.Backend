@@ -15,9 +15,10 @@ public class InteractionAppService : IInteractionAppService
 
     public async Task CreateUsersInteraction(string actorId, string targetId, string type)
     {
+        // type = view like, pass, superlike, block
         Guid parsedActorId = Guid.Parse(actorId);
         Guid parsedTargetId = Guid.Parse(targetId);
-        Interactions interaction = Interactions.CreateInteractions(parsedActorId, parsedTargetId, "like");
+        Interactions interaction = Interactions.CreateInteractions(parsedActorId, parsedTargetId, type);
         await _interactionsRepository.UsersInteraction(interaction);
     }
 }

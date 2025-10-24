@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("[controller]/api")]
+[Route("[controller]")]
 public class InteractionsController : ControllerBase
 {
     public record struct CreateInteractionReq(string ActorId, string TargetId, string Type);

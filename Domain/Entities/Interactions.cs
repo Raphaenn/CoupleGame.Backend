@@ -24,7 +24,7 @@ public class Interactions
         if (string.IsNullOrWhiteSpace(type))
             throw new ArgumentException("O tipo de interação é obrigatório.");
 
-        if (type != "invite" && type != "follow" && type != "like")
+        if (type != "skip" && type != "dislike" && type != "like" && type != "save")
             throw new ArgumentException("Tipo de interação inválido.");
         return new Interactions(id: Guid.NewGuid(), actorId, targetId, type);
     }

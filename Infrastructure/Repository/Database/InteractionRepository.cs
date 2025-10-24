@@ -20,12 +20,9 @@ public class InteractionRepository : IInteractionsRepository
         await using (var command = new NpgsqlCommand())
         {
             command.Connection = conn;
-            command.CommandText = """
-              INSERT INTO interactions (id, actor_id, target_id, type, created_at)
-              VALUES (@id, @actorId, @targetId, @type, @createdAt)
-              ON CONFLICT (@actorId, @targetId, @type) DO NOTHING
-              """;
-
+            // todo - add upsert to use idempontence
+           
+            command.CommandText = "INSERT INTO interactions (id, actor_id, target_id, type, created_at) VALUES (@id, @actorId, @targetId, @type, @createdAt)";
 
             command.Parameters.AddWithValue("@id", interaction.Id);
             command.Parameters.AddWithValue("@actorId", interaction.ActorId);
