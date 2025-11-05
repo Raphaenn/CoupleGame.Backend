@@ -148,7 +148,7 @@ public class UserRepository : IUserRepository
             
             photos.ForEach(p =>
             {
-                UserPhotos parsed = new UserPhotos(p.Id.ToString(), p.Url);
+                UserPhotos parsed = new UserPhotos(p.Id.ToString(), p.Url, false);
                 user.AddPhoto(parsed);
             });
         }
@@ -273,7 +273,7 @@ public class UserRepository : IUserRepository
             addedUser.AddScore(rating ?? 1500);
             photos.ForEach(p =>
             {
-                UserPhotos parsed = new UserPhotos(p.Id.ToString(), p.Url);
+                UserPhotos parsed = new UserPhotos(p.Id.ToString(), p.Url, false);
                 addedUser.AddPhoto(parsed);
             });
             

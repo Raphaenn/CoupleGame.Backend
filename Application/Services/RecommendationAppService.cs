@@ -59,7 +59,11 @@ public class RecommendationAppService : IRecommendationAppService
                 Height = u.Height,
                 Weight = u.Weight,
                 Rating = u.Score,
-                Photos = u.Photos.Select(p => p.Url).ToList()
+                Photos = u.Photos.Select(p => new PhotoDto
+                {
+                    Url = p.Url,
+                    IsProfile = p.IsProfile
+                }).ToList()
             }).ToList(),
             cursor);
     }

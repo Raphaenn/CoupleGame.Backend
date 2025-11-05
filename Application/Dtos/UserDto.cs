@@ -1,5 +1,7 @@
 namespace Application.Dtos;
 
+public record struct PhotoDto(string Url, bool IsProfile);
+
 public class UserDto
 {
     public string? Id { get; set; } = String.Empty;
@@ -10,5 +12,5 @@ public class UserDto
     public DateTime BirthDate { get; set; }
     
     public decimal Rating { get; set; } = 1500;
-    public List<string> Photos { get; set; } = new();
+    public List<PhotoDto> Photos { get; set; } = new List<PhotoDto>();
 }

@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace Api.Controllers;
 public class InteractionsController : ControllerBase
 {
     public record struct CreateInteractionReq(string ActorId, string TargetId, string Type);
+    public record ListUserInteractionsReq(string Type, string? LastId, int Size);
     
     private readonly IInteractionAppService _interactionAppService;
 
@@ -23,6 +25,20 @@ public class InteractionsController : ControllerBase
         {
             await _interactionAppService.CreateUsersInteraction(req.ActorId, req.TargetId, req.Type);
             return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpGet("/list/interactions/{id}")]
+    public async Task<ActionResult<IEnumerable<InteractionDto>>> ListSaves([FromRoute] string id, [FromQuery] ListUserInteractionsReq req, CancellationToken ct)
+    {
+        try
+        {
+             IReadOnlyList<InteractionDto> res = await _interactionAppService.ListUserInteractions(id, req.Type, req.LastId, req.Size, ct);
+            return Ok(res);
         }
         catch (Exception e)
         {

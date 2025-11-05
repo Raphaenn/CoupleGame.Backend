@@ -1,3 +1,4 @@
+using Application.Dtos;
 using Application.Interfaces;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -20,5 +21,23 @@ public class InteractionAppService : IInteractionAppService
         Guid parsedTargetId = Guid.Parse(targetId);
         Interactions interaction = Interactions.CreateInteractions(parsedActorId, parsedTargetId, type);
         await _interactionsRepository.UsersInteraction(interaction);
+    }
+
+    public async Task<IReadOnlyList<InteractionDto>> ListUserInteractions(string userId, string type, string? lastId, int sizePlusOne, CancellationToken ct)
+    {
+        Guid parsedUserId = Guid.Parse(userId);
+        Guid? parsedLastId = string.IsNullOrEmpty(lastId) ? null : Guid.Parse(lastId);
+        IEnumerable<Interactions> interacations = await _interactionsRepository.ListUserInteractionsByType(parsedUserId, type, parsedLastId, sizePlusOne + 1, ct);
+
+        // Map “flat” → DTOs; materialize 1x
+        var dtos = interacations.Select(i => new InteractionDto
+        {
+            Id = i.Id.ToString(),
+            ActorId = i.ActorId.ToString(),
+            TargetId = i.TargetId.ToString(),
+            Type = i.Type
+        }).ToArray();
+
+        return dtos;
     }
 }
