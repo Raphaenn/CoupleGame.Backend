@@ -26,7 +26,8 @@ public class InteractionAppService : IInteractionAppService
     public async Task<IReadOnlyList<InteractionDto>> ListUserInteractions(string userId, string type, string? lastId, int sizePlusOne, CancellationToken ct)
     {
         Guid parsedUserId = Guid.Parse(userId);
-        Guid? parsedLastId = string.IsNullOrEmpty(lastId) ? null : Guid.Parse(lastId);
+        Guid? parsedLastId = Guid.TryParse(lastId, out var g) ? g : null;
+
         IEnumerable<Interactions> interacations = await _interactionsRepository.ListUserInteractionsByType(parsedUserId, type, parsedLastId, sizePlusOne + 1, ct);
 
         // Map “flat” → DTOs; materialize 1x
