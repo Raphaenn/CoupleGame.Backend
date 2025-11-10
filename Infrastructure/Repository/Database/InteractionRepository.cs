@@ -38,14 +38,14 @@ public class InteractionRepository : IInteractionsRepository
     public async Task<IReadOnlyList<Interactions>> ListUserInteractionsByType(Guid actorId, string type, Guid? lastId, int limitPlusOne, CancellationToken ct)
     {
         var sql = """
-           SELECT id, actor_id, target_id, type
-           FROM interactions
-           WHERE actor_id = @actorId
-             AND (@type IS NULL OR type = @type)
-             AND (@lastId IS NULL OR id > @lastId)    -- keyset simples por id
-           ORDER BY id
-           LIMIT @limitPlusOne;
-           """;
+          SELECT i.id, i.actor_id, i.target_id, i.type
+          FROM interactions i
+          WHERE i.actor_id = @actorId
+            AND (@type IS NULL OR i.type = @type)
+            AND (@lastId IS NULL OR i.id > @lastId)
+          ORDER BY i.id
+          LIMIT @limitPlusOne;
+          """;
 
         await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct);
         await using var cmd = new NpgsqlCommand(sql, conn);

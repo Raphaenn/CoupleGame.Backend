@@ -52,8 +52,13 @@ public class UserRepository : IUserRepository
             string name = reader["name"].ToString() ?? string.Empty;
             string email = reader["email"].ToString() ?? string.Empty;
             DateTime birthDate = (DateTime)reader["birthdate"];
-            double uHeight = (double)reader["height"];
-            double uWeight = (double)reader["weight"];
+            double uHeight = reader.IsDBNull(reader.GetOrdinal("height"))
+                ? 0.0
+                : reader.GetDouble(reader.GetOrdinal("height"));
+
+            double uWeight = reader.IsDBNull(reader.GetOrdinal("weight"))
+                ? 0.0
+                : reader.GetDouble(reader.GetOrdinal("weight"));
 
             User user = User.Rehydrate(id, name, email, uHeight, uWeight, birthDate);
             return user;

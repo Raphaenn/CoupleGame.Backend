@@ -6,4 +6,6 @@ public class InteractionDto
     public string ActorId { get; set; } = String.Empty;
     public string TargetId { get; set; } = String.Empty;
     public string Type { get; set; } = String.Empty;
+    public string UserName { get; set; } = String.Empty;
+    public string UserEmail { get; set; } = String.Empty;
 }

@@ -32,7 +32,7 @@ public class InteractionsController : ControllerBase
         }
     }
 
-    [HttpGet("/list/interactions/{id}")]
+    [HttpGet("list/{id}")]
     public async Task<ActionResult<IEnumerable<InteractionDto>>> ListSaves([FromRoute] string id, [FromQuery] ListUserInteractionsReq req, CancellationToken ct)
     {
         try
