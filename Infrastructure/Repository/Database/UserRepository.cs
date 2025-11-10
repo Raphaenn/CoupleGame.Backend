@@ -41,7 +41,32 @@ public class UserRepository : IUserRepository
         await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
         await using var command = new NpgsqlCommand();
         command.Connection = conn;
-        command.CommandText = "SELECT * FROM users WHERE id = @userId";
+        string query = """
+           SELECT
+             u.id,
+             u.name,
+             u.email,
+             u.height,
+             u.weight,
+             u.birthdate,
+             COALESCE(
+               json_agg(
+                 json_build_object(
+                   'id', p.id,
+                   'url', p.url,
+                   'created_at', p.created_at
+                 )
+                 ORDER BY p.created_at DESC
+               ) FILTER (WHERE p.id IS NOT NULL),
+               '[]'::json
+             ) AS photos
+           FROM users u
+           INNER JOIN user_photo p ON p.user_id = u.id
+           WHERE u.id = @userId
+           GROUP BY u.id
+           """;
+        
+        command.CommandText = query;
         command.Parameters.AddWithValue("@userId", userId);
 
         var reader = await command.ExecuteReaderAsync();
@@ -52,17 +77,31 @@ public class UserRepository : IUserRepository
             string name = reader["name"].ToString() ?? string.Empty;
             string email = reader["email"].ToString() ?? string.Empty;
             DateTime birthDate = (DateTime)reader["birthdate"];
-            double uHeight = reader.IsDBNull(reader.GetOrdinal("height"))
-                ? 0.0
-                : reader.GetDouble(reader.GetOrdinal("height"));
+            double uHeight = reader["height"] == DBNull.Value ? 0.0 : Convert.ToDouble(reader["height"]);
+            double uWeight = reader["weight"] == DBNull.Value ? 0.0 : Convert.ToDouble(reader["weight"]);
 
-            double uWeight = reader.IsDBNull(reader.GetOrdinal("weight"))
-                ? 0.0
-                : reader.GetDouble(reader.GetOrdinal("weight"));
+            // A coluna 4 é JSON (texto) com o array de fotos
+            string photosJson = reader.IsDBNull(reader.GetOrdinal("photos"))
+                ? "[]"
+                : reader.GetString(reader.GetOrdinal("photos"));
 
+            // Deserializa para List<PhotoDto>
+            var photos = JsonSerializer.Deserialize<List<PhotoDto>>(
+                photosJson,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
+            ) ?? new List<PhotoDto>();
+
+            
             User user = User.Rehydrate(id, name, email, uHeight, uWeight, birthDate);
+            photos.ForEach(p =>
+            {
+                UserPhotos parsed = new UserPhotos(p.Id.ToString(), p.Url, false);
+                user.AddPhoto(parsed);
+            });
+            
             return user;
         }
+
         return null;
     }
 

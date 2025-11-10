@@ -74,15 +74,18 @@ public class InteractionAppService : IInteractionAppService
     
         // Limite de paralelismo para não saturar o pool/conexão
         var sem = new SemaphoreSlim(8); // ajuste conforme pool
+        
+        // Cria um dicionário thread-safe (seguro para acesso concorrente).
         var userMap = new ConcurrentDictionary<Guid, User?>();
     
+        // Cria uma coleção de tarefas assíncronas (Task) para cada id presente em targetIds
         var tasks = targetIds.Select(async id =>
         {
             await sem.WaitAsync(ct).ConfigureAwait(false);
             try
             {
-                var u = await _userRepository.SearchUser(id).ConfigureAwait(false);
-                userMap[id] = u is null ? null : User.Rehydrate(u.Id, u.Name, u.Email, 0, 0, DateTime.Now);
+                User? u = await _userRepository.SearchUser(id).ConfigureAwait(false);
+                userMap[id] = u is null ? null : u;
             }
             finally { sem.Release(); }
         });
@@ -90,6 +93,7 @@ public class InteractionAppService : IInteractionAppService
         await Task.WhenAll(tasks).ConfigureAwait(false);
     
         var list = new List<InteractionDto>(interactions.Count);
+        
         foreach (var i in interactions)
         {
             userMap.TryGetValue(i.TargetId, out var u);
@@ -99,8 +103,13 @@ public class InteractionAppService : IInteractionAppService
                 ActorId = i.ActorId.ToString(),
                 TargetId = i.TargetId.ToString(),
                 Type = i.Type,
-                UserName = u.Name,
-                UserEmail = u.Email
+                UserName = u?.Name,
+                UserEmail = u?.Email,
+                Photos = u.Photos.Select(p => new PhotoDto
+                {
+                    Url = p.Url,
+                    IsProfile = p.IsProfile
+                }).ToList()
             });
         }
         return list;
