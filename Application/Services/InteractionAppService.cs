@@ -105,6 +105,7 @@ public class InteractionAppService : IInteractionAppService
                 Type = i.Type,
                 UserName = u?.Name,
                 UserEmail = u?.Email,
+                UserBirthDate = u.BirthDate,
                 Photos = u.Photos.Select(p => new PhotoDto
                 {
                     Url = p.Url,

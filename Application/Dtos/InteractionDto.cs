@@ -8,6 +8,7 @@ public class InteractionDto
     public string Type { get; set; } = String.Empty;
     public string UserName { get; set; } = String.Empty;
     public string UserEmail { get; set; } = String.Empty;
+    public DateTime UserBirthDate { get; set; }
     
     
     public List<PhotoDto> Photos { get; set; } = new List<PhotoDto>();
