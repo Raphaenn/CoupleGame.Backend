@@ -10,6 +10,7 @@ public class InteractionsController : ControllerBase
 {
     public record struct CreateInteractionReq(string ActorId, string TargetId, string Type);
     public record ListUserInteractionsReq(string Type, string? LastId, int Size);
+    public record struct RemoveLikeReq(string ActorId, string TargetId);
     
     private readonly IInteractionAppService _interactionAppService;
 
@@ -39,6 +40,20 @@ public class InteractionsController : ControllerBase
         {
              IReadOnlyList<InteractionDto> res = await _interactionAppService.ListUserInteractions(id, req.Type, req.LastId, req.Size, ct);
             return Ok(res);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    [HttpDelete("delete")]
+    public async Task<ActionResult> RemoveUserInteraction([FromBody] RemoveLikeReq req, CancellationToken ct)
+    {
+        try
+        {
+            await _interactionAppService.RemoveLike(req.ActorId, req.TargetId, ct);
+            return NoContent();
         }
         catch (Exception e)
         {

@@ -78,4 +78,22 @@ public class InteractionRepository : IInteractionsRepository
         // nunca retorne null
         return list.ToArray(); // snapshot leve, expõe como IReadOnlyList<Interactions>
     }
+
+    public async Task<bool> RemoveUserLike(Guid actorId, Guid targetId, CancellationToken ct)
+    {
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct);
+        await using (var command = new NpgsqlCommand())
+        {
+            command.Connection = conn;
+            command.CommandText = "DELETE FROM interactions WHERE actor_id = @actorId AND target_id = @targetId";
+
+            command.Parameters.AddWithValue("@actorId", actorId);
+            command.Parameters.AddWithValue("@targetId", targetId);
+
+            var result = await command.ExecuteNonQueryAsync(ct);
+            return true;
+        }
+    }
+
+
 }

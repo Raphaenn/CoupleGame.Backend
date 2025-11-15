@@ -115,4 +115,16 @@ public class InteractionAppService : IInteractionAppService
         }
         return list;
     }
+
+    public async Task<bool> RemoveLike(string actorId, string targetId, CancellationToken ct)
+    {
+        if (!Guid.TryParse(actorId, out var parsedActorId) & !Guid.TryParse(targetId, out var parsedTargetId))
+        {
+            throw new ArgumentException("Invalid user id"); 
+        }
+
+        bool res = await _interactionsRepository.RemoveUserLike(parsedActorId, parsedTargetId, ct);
+
+        return res;
+    }
 }
