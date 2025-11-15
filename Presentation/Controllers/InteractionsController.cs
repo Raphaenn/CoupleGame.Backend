@@ -47,7 +47,7 @@ public class InteractionsController : ControllerBase
         }
     }
     
-    [HttpDelete("delete")]
+    [HttpPost("remove-like")]
     public async Task<ActionResult> RemoveUserInteraction([FromBody] RemoveLikeReq req, CancellationToken ct)
     {
         try
