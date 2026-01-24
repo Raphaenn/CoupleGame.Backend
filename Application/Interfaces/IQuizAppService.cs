@@ -10,6 +10,8 @@ public interface IQuizAppService
     Task<QuizDto?> UpdateQuiz(string quizId, string questionId);
 
     Task<List<QuizDto>> ListOpenQuiz(string userId);
+    
+    Task<List<QuizDto>> ListQuizByCoupleId(string coupleId);
 
     Task<QuizDto> GetInviteQuiz(string quizId);
 
@@ -18,4 +20,8 @@ public interface IQuizAppService
     Task<QuizDto> GetResult(string quizId);
 
     Task<QuizDto> UpdateQuizStatus(string quizId, string status);
+    
+    Task<List<QuizDto>> ListCompletedQuizByCoupleId(string coupleId);
+
+    Task<QuizStatsDto> GetQuizStats(string quizId);
 }

@@ -18,7 +18,7 @@ public class QuestionController : ControllerBase
     }
 
     [HttpGet("/question/data/{questionId}")]
-    public async Task<ActionResult<QuestionDto>> GetQuestion([FromQuery] string questionId)
+    public async Task<ActionResult<QuestionDto>> GetQuestion([FromRoute] string questionId)
     {
         try
         {
@@ -45,7 +45,6 @@ public class QuestionController : ControllerBase
         }
     }
     
-    [Authorize]
     [HttpGet("/question/random/{topicId}")]
     public async Task<ActionResult<List<QuestionDto>>> GetRandomQuestion([FromRoute] string topicId, [FromQuery] string? quizId)
     {

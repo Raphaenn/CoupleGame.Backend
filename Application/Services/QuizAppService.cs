@@ -7,19 +7,33 @@ using Domain.Services;
 
 namespace Application.Services;
 
+public class TopicStats
+{
+    public Guid? TopicId { get; set; }
+    public string? Ans { get; set; }
+}
+
+public class Results
+{
+    public string TopicName { get; set; }
+    public int Result { get; set; }
+}
+
 public class QuizAppService : IQuizAppService
 {
     private readonly IQuizRepository _quizRepository;
     private readonly IQuestionRepository _questionRepository;
     private readonly IAnswerRepository _answerRepository;
     private readonly ICoupleRepository _coupleRepository;
+    private readonly ITopicRepository _topicRepository;
 
-    public QuizAppService(IQuizRepository quizRepository, IQuestionRepository questionRepository, IAnswerRepository answerRepository, ICoupleRepository coupleRepository)
+    public QuizAppService(IQuizRepository quizRepository, IQuestionRepository questionRepository, IAnswerRepository answerRepository, ICoupleRepository coupleRepository, ITopicRepository topicRepository)
     {
         _quizRepository = quizRepository;
         _questionRepository = questionRepository;
         _answerRepository = answerRepository;
         _coupleRepository = coupleRepository;
+        _topicRepository = topicRepository;
     }
 
     public async Task<QuizDto> StartQuiz(string coupleId, string questionId)
@@ -466,5 +480,238 @@ public class QuizAppService : IQuizAppService
         {
             throw new Exception(e.Message);
         }
+    }
+
+    public async Task<List<QuizDto>> ListQuizByCoupleId(string coupleId)
+    {
+        try
+        {
+            Guid parsedCoupleId = Guid.Parse(coupleId);
+            List<Quiz> list = await _quizRepository.ListQuizByCoupleId(parsedCoupleId);
+
+            List<QuizDto> parsedList = new List<QuizDto>();
+            foreach (var quiz in list)
+            {
+                parsedList.Add(new QuizDto
+                {
+                    QuizId = quiz.Id.ToString(),
+                    CoupleId = quiz.CoupleId.ToString(),
+                    QuestionId1 = quiz.Question1.ToString(),
+                    QuestionId2 = quiz.Question2.ToString(),
+                    QuestionId3 = quiz.Question3.ToString(),
+                    QuestionId4 = quiz.Question4.ToString(),
+                    QuestionId5 = quiz.Question5.ToString(),
+                    QuestionId6 = quiz.Question6.ToString(),
+                    CreatedAt = quiz.CreatedAt
+                });
+            }
+
+            return parsedList;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
+    
+    public async Task<List<QuizDto>> ListCompletedQuizByCoupleId(string coupleId)
+    {
+        try
+        {
+            Guid parsedCoupleId = Guid.Parse(coupleId);
+            List<Quiz> list = await _quizRepository.ListCompletedQuizzesByCoupleId(parsedCoupleId);
+
+            List<QuizDto> parsedList = new List<QuizDto>();
+            foreach (var quiz in list)
+            {
+                parsedList.Add(new QuizDto
+                {
+                    QuizId = quiz.Id.ToString(),
+                    CoupleId = quiz.CoupleId.ToString(),
+                    QuestionId1 = quiz.Question1.ToString(),
+                    QuestionId2 = quiz.Question2.ToString(),
+                    QuestionId3 = quiz.Question3.ToString(),
+                    QuestionId4 = quiz.Question4.ToString(),
+                    QuestionId5 = quiz.Question5.ToString(),
+                    QuestionId6 = quiz.Question6.ToString(),
+                    CreatedAt = quiz.CreatedAt
+                });
+            }
+
+            return parsedList;
+        }
+        catch (Exception e)
+        {
+            throw new Exception(e.Message);
+        }
+    }
+
+    public async Task<QuizStatsDto> GetQuizStats(string quizId)
+    {
+        Stopwatch watch = Stopwatch.StartNew();
+        Guid parsedQuizId = Guid.Parse(quizId);
+        var quizTask = _quizRepository.GetQuizById(parsedQuizId);
+        var answerTask = _answerRepository.ListAnswersByQuizId(parsedQuizId);
+
+        await Task.WhenAll(quizTask, answerTask);
+        Quiz quiz = await quizTask;
+        List<Answers> answers = await answerTask;
+
+        List<Guid> questionIds = quiz.GetType()
+            .GetProperties()
+            .Where(p => p.Name.StartsWith("Question"))
+            .Select(p => p.GetValue(quiz))
+            .OfType<Guid>()
+            .ToList();
+        
+        List<string> answersContent1 = answers[0].GetType()
+            .GetProperties()
+            .Where(p => p.Name.StartsWith("Answer"))
+            .Select(p => p.GetValue(answers[0]))
+            .OfType<string>()
+            .ToList();
+
+        List<string> answersContent2 = answers[1].GetType().GetProperties().Where(p => p.Name.StartsWith("Answer")).Select(p => p.GetValue(answers[1])).OfType<string>().ToList();
+        
+        foreach (var q in questionIds)
+        {
+            Question quest = await _questionRepository.GetSingleQuestion(q); 
+            quiz.AddQuestion(quest);
+        }
+
+        // calculate
+        Dictionary<string, string> topics = new Dictionary<string, string>()
+        {
+            {"Finance", "e6128121-b023-4683-b20d-91126aa22c9c"},
+            {"Religion", "6ba6a519-9090-4534-90ba-06c7ed8506c2"},
+            {"Fidelity", "82382bc1-8213-428a-9ccd-cd9be564451c"},
+            {"Sex", "bb386817-bbcf-454c-bece-9d779088514c"},
+            {"Work", "bc2e707d-adb9-482e-ae5f-3b5c87a72879"},
+            {"Home", "f0ab27e6-ec6a-4d1f-b8c3-3224211831b7"},
+        };
+        
+        // join questions by topics
+        Dictionary<Guid, List<Question>> questionsByTopic = quiz.QuestionsList
+            .GroupBy(q => q.TopicId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Dictionary<string, TopicStats> stats1 = new Dictionary<string, TopicStats>();
+        
+        // get user 1 worksheet1
+        List<TopicStats> worksheet1 = new List<TopicStats>();
+        foreach (var (a, q) in answersContent1.Zip(quiz.QuestionsList))
+        {
+            TopicStats ts = new TopicStats
+            {
+                TopicId = q.TopicId,
+                Ans = a
+            };
+
+            worksheet1.Add(ts);
+        }
+
+        List<TopicStats> worksheet2 = new List<TopicStats>();
+        foreach (var (a, q) in answersContent2.Zip(quiz.QuestionsList))
+        {
+            TopicStats ts = new TopicStats
+            {
+                TopicId = q.TopicId,
+                Ans = a
+            };
+
+            worksheet2.Add(ts);
+        }
+
+        // worksheet2.GroupBy(t => t.TopicId)
+        List<Results> r = new List<Results>();
+
+        IEnumerable<IGrouping<Guid?, TopicStats>> parsed1 = worksheet1.GroupBy(t => t.TopicId).ToList();
+        IEnumerable<IGrouping<Guid?, TopicStats>> parsed2 = worksheet2.GroupBy(t => t.TopicId).ToList();
+        
+        var keys1 = parsed1
+            .SelectMany(g => g.Select(t => (g.Key, t.Ans)))
+            .ToHashSet();
+
+        var keys2 = parsed2
+            .SelectMany(g => g.Select(t => (g.Key, t.Ans)))
+            .ToHashSet();
+        
+        // var comuns = keys1.Intersect(keys2);
+        // var diferentes = keys1.Except(keys2);
+
+        // Get both groups and serialize them into dictionaries: Dictionary<TKey, List<string>>.
+        // // Then, retrieve all topic keys and loop through each one,
+        // // comparing the corresponding answer lists (List<string>) from both dictionaries.
+        static Dictionary<Guid?, decimal> CompareByTopicPercent(
+            IEnumerable<IGrouping<Guid?, TopicStats>> parsed1,
+            IEnumerable<IGrouping<Guid?, TopicStats>> parsed2
+            )
+        {
+            // / Transformo em dicionários pra acessar rápido por TopicId
+            Dictionary<Guid?, List<string?>> d1 = parsed1.ToDictionary(g => g.Key, g => g.Select(x => x.Ans).ToList());
+            Dictionary<Guid?, List<string?>> d2 = parsed2.ToDictionary(g => g.Key, g => g.Select(x => x.Ans).ToList());
+
+            // Conjunto de todos os tópicos presentes em qualquer lado
+            IEnumerable<Guid?> allTopics = d1.Keys.Union(d2.Keys);
+            var result = new Dictionary<Guid?, decimal>();
+
+            foreach (var topicId in allTopics)
+            {
+                // get string list of d1
+                d1.TryGetValue(topicId, out var a1);
+                d2.TryGetValue(topicId, out var a2);
+
+                a1 ??= new List<string?>();
+                a2 ??= new List<string?>();
+
+                // compara só até o menor tamanho (evita estourar)
+                var total = Math.Min(a1.Count, a2.Count);
+
+                if (total == 0)
+                {
+                    result[topicId] = 0m;
+                    continue;
+                }
+
+                int matches = 0;
+
+                for (int i = 0; i < total; i++)
+                {
+                    // normaliza (opcional): trim e case-insensitive
+                    var s1 = a1[i]?.Trim();
+                    var s2 = a2[i]?.Trim();
+
+                    if (string.Equals(s1, s2, StringComparison.OrdinalIgnoreCase))
+                        matches++;
+                }
+
+                var percent = (decimal)matches * 100m / (decimal)total;
+                result[topicId] = Math.Round(percent, 2);
+            }
+
+            return result;
+
+        }
+        
+        Dictionary<Guid?, decimal> percentages = CompareByTopicPercent(parsed1, parsed2);
+
+        foreach (var (topicId, percent) in percentages)
+        {
+            Console.WriteLine($"{topicId}: {percent}%");
+        }
+        
+        watch.Stop();
+        Console.WriteLine($"⏱️ Tempo SEQUENCIAL: {watch.ElapsedMilliseconds} ms");
+        QuizStatsDto res = new QuizStatsDto
+        {
+            QuizId = null,
+            Finance = null,
+            Sex = null,
+            Fidelity = null,
+            Work = null,
+            Religion = null,
+            Home = null
+        };
+        return res;
     }
 }

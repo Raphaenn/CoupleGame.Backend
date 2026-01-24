@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Api.Extensions;
 using Infrastructure.Data.Connections;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,10 +45,14 @@ builder.Services
     .AddJwtBearer(o =>
     {
         o.MapInboundClaims = false;
+
         o.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,   ValidIssuer = issuer,
-            ValidateAudience = true, ValidAudience = audience,
+            ValidateIssuer = true,
+            ValidIssuer = issuer,
+
+            ValidateAudience = true,
+            ValidAudience = audience,
 
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30),
@@ -55,13 +60,11 @@ builder.Services
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!)),
 
-            NameClaimType = "sub",
+            NameClaimType = JwtRegisteredClaimNames.Sub, // "sub"
             RoleClaimType = "role"
         };
 
-        // Em DEV, para facilitar debugging:
-        o.IncludeErrorDetails = true;
-        // o.RequireHttpsMetadata = false; // só se estiver sem HTTPS em dev
+        o.IncludeErrorDetails = true; // dev
     });
 
 

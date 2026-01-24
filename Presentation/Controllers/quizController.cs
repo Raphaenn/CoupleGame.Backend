@@ -23,6 +23,7 @@ public class QuizController : ControllerBase
     {
         try
         {
+            
             QuizDto? response = await _quizAppService.StartQuiz(coupleId: request.CoupleId, questionId: request.QuestionId);
             
             return Ok(response);
@@ -48,13 +49,13 @@ public class QuizController : ControllerBase
     }
     
     [HttpGet("/quiz/get/{coupleId}")]
-    public async Task<ActionResult<QuizDto?>> GetQuizByCoupleId([FromQuery] string coupleId)
+    public async Task<ActionResult<List<QuizDto>>> GetQuizByCoupleId([FromRoute] string coupleId)
     {
         try
         {
-            // QuizDto? response = await _quizAppService.GetQuizByCouple(coupleId);
+            List<QuizDto>? response = await _quizAppService.ListQuizByCoupleId(coupleId);
             
-            return Ok();
+            return Ok(response);
         }
         catch (Exception e)
         {
@@ -106,18 +107,35 @@ public class QuizController : ControllerBase
         }
     }
 
-    [HttpGet("/quiz/completed/{id}")]
-    public async Task<ActionResult<QuizDto>> GetCompletedQuiz([FromRoute] string id)
+    // List completed quizzes by couple id
+    [HttpGet("/quiz/list/completed/{id}")]
+    public async Task<ActionResult<List<QuizDto>>> GetCompletedQuiz([FromRoute] string id)
     {
         try
         {
-            return Ok();
+            var q = await _quizAppService.ListCompletedQuizByCoupleId(id);
+            return Ok(q);
         }
         catch (Exception e)
         {
             return BadRequest(e.Message);
         }
     }
+    
+    // todo - List completed quizzes by user id
+    // [HttpGet("/quiz/list/completed/{id}")]
+    // public async Task<ActionResult<List<QuizDto>>> GetCompletedQuiz([FromRoute] string id)
+    // {
+    //     try
+    //     {
+    //         await _quizAppService.ListQuizByCoupleId()
+    //         return Ok();
+    //     }
+    //     catch (Exception e)
+    //     {
+    //         return BadRequest(e.Message);
+    //     }
+    // }
     
     [HttpGet("/quiz/result/{id}")]
     public async Task<ActionResult<QuizDto>> GetQuizResult([FromRoute] string id)
@@ -126,8 +144,19 @@ public class QuizController : ControllerBase
         {
             var q = await _quizAppService.GetResult(id);
             return Ok(q);
+        } catch (Exception e) {
+            return BadRequest(e.Message);
         }
-        catch (Exception e)
+    }
+
+    [HttpGet("/quiz/result/stats/{id}")]
+    public async Task<ActionResult<QuizDto>> GetQuizResultStats([FromRoute] string id)
+    {
+        try
+        {
+            var q = await _quizAppService.GetQuizStats(id);
+            return Ok(q);
+        } catch (Exception e)
         {
             return BadRequest(e.Message);
         }

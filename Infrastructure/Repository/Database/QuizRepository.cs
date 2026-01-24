@@ -224,4 +224,50 @@ public class QuizRepository : IQuizRepository
             await command.ExecuteNonQueryAsync();
         }
     }
+    
+    public async Task<List<Quiz>> ListCompletedQuizzesByCoupleId(Guid coupleId)
+    {
+        Console.WriteLine(coupleId);
+        await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync();
+        await using (var command = new NpgsqlCommand())
+        {
+            command.Connection = conn;
+            command.CommandText = "SELECT * FROM quiz WHERE couple_id = @coupleId AND status = 'Done'";
+
+            command.Parameters.AddWithValue("@coupleId", coupleId);
+
+            var reader = await command.ExecuteReaderAsync();
+
+            if (!reader.HasRows)
+            {
+                throw new Exception("Invalid query");
+            }
+
+            List<Quiz> qList = new List<Quiz>();
+            while (await reader.ReadAsync())
+            {
+                Guid quizId = (Guid)reader["id"];
+                Guid couple = (Guid)reader["couple_id"];
+                Guid question1 = (Guid)reader["question_id_1"];
+                Guid question2 = (Guid)reader["question_id_2"];
+                Guid question3 = (Guid)reader["question_id_3"];
+                Guid question4 = (Guid)reader["question_id_4"];
+                Guid question5 = (Guid)reader["question_id_5"];
+                Guid question6 = (Guid)reader["question_id_6"];
+                string status = reader.IsDBNull(reader.GetOrdinal("status"))
+                    ? string.Empty
+                    : reader.GetString(reader.GetOrdinal("status"));
+                DateTime createdAt = (DateTime)reader["created_at"];
+                
+                if (!Enum.TryParse(status, true, out QuizStatus parsedStatus))
+                {
+                    parsedStatus = QuizStatus.Pending;
+                }
+
+                Quiz q = Quiz.Rehydrate(quizId, couple, question1, question2, question3, question4, question5, question6, parsedStatus, createdAt);
+                qList.Add(q);
+            }
+            return qList;
+        }
+    }
 }

@@ -15,4 +15,6 @@ public interface IQuizRepository
     Task<List<Quiz>> ListQuizByCoupleId(Guid coupleId);
 
     Task ChangeQuizStatus(Guid quizId, QuizStatus status);
+
+    Task<List<Quiz>> ListCompletedQuizzesByCoupleId(Guid coupleId);
 }
