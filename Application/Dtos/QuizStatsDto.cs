@@ -2,11 +2,11 @@ namespace Application.Dtos;
 
 public class QuizStatsDto
 {
-    public string QuizId { get; set; } = String.Empty;
-    public string Finance { get; set; } = String.Empty;
-    public string Sex { get; set; } = String.Empty;
-    public string Fidelity { get; set; } = String.Empty;
-    public string Work { get; set; } = String.Empty;
-    public string Religion { get; set; } = String.Empty;
-    public string Home { get; set; } = String.Empty;
+    public Guid QuizId { get; set; }
+    public decimal Finance { get; set; }
+    public decimal Sex { get; set; }
+    public decimal Fidelity { get; set; }
+    public decimal Work { get; set; }
+    public decimal Religion { get; set; }
+    public decimal Home { get; set; }
 }
