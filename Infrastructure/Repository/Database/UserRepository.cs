@@ -105,7 +105,7 @@ public class UserRepository : IUserRepository
         return null;
     }
 
-    public async Task<IReadOnlyList<User>> GetUsersByParams(string city, string sexuality, string sexualOrientation, double? height, double? weight, int size, CancellationToken ct)
+    public async Task<IReadOnlyList<User>> GetUsersByParams(Guid userId, string city, string sexuality, string sexualOrientation, double? height, double? weight, int size, CancellationToken ct)
     {
         await using var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct);
         await using var command = new NpgsqlCommand();
@@ -126,11 +126,19 @@ public class UserRepository : IUserRepository
               )  AS photos
               FROM users u
               INNER JOIN user_photo p ON p.user_id = u.id
-              WHERE u.city = @city AND u.sexuality = @sexuality AND u.sexual_orientation = @sO AND height = @height AND weight = @weight
+              LEFT JOIN interactions it
+              ON it.actor_id = @user_id AND it.target_id = u.id
+              WHERE u.city = @city
+                AND u.sexuality = @sexuality
+                AND u.sexual_orientation = @sO
+                AND (@height IS NULL OR u.height = @height)
+                AND (@weight IS NULL OR u.weight = @weight)
+                AND it.target_id IS NULL
               GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight
               LIMIT @size;
               """;
             
+            command.Parameters.AddWithValue("@user_id", userId);
             command.Parameters.AddWithValue("@city", city);
             command.Parameters.AddWithValue("@sexuality", sexuality);
             command.Parameters.AddWithValue("@sO", sexualOrientation);
@@ -154,11 +162,17 @@ public class UserRepository : IUserRepository
               )  AS photos
               FROM users u
               INNER JOIN user_photo p ON p.user_id = u.id
-              WHERE u.city = @city AND u.sexuality = @sexuality AND u.sexual_orientation = @sO
+              LEFT JOIN interactions it
+              ON it.actor_id = @user_id AND it.target_id = u.id
+              WHERE u.city = @city
+                AND u.sexuality = @sexuality
+                AND u.sexual_orientation = @sO
+                AND it.target_id IS NULL
               GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight
               LIMIT @size;
               """;
             
+            command.Parameters.AddWithValue("@user_id", userId);
             command.Parameters.AddWithValue("@city", city);
             command.Parameters.AddWithValue("@sexuality", sexuality);
             command.Parameters.AddWithValue("@sO", sexualOrientation);
@@ -207,7 +221,7 @@ public class UserRepository : IUserRepository
         command.Connection = conn;
         
         var firstPage = lastScore is null && lastId is null;
-
+        
         command.CommandText = !firstPage
             ? """
               SELECT
@@ -234,13 +248,12 @@ public class UserRepository : IUserRepository
               INNER JOIN person_rating pr ON pr.user_id = u.id
               WHERE
               (
-                  pr.rating < $1
-                  OR (pr.rating = $1 AND u.id < $2)
+                pr.rating < @lastScore OR (pr.rating = @lastScore AND u.id < @lastId)
               )
-              AND u.city = $3 AND u.sexual_orientation = $4 AND u.sexuality = $6
+              AND u.city = @city AND u.sexual_orientation = @sO AND u.sexuality = @sexuality
               GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight, pr.rating
               ORDER BY pr.rating DESC, u.id DESC
-              LIMIT $5;
+              LIMIT @limit;
               """
             : """
               SELECT
@@ -280,12 +293,12 @@ public class UserRepository : IUserRepository
         }
         else
         {
-            command.Parameters.AddWithValue("$1", lastScore);
-            command.Parameters.AddWithValue("$2", lastId);
-            command.Parameters.AddWithValue("$3", city);
-            command.Parameters.AddWithValue("$4", sO);
-            command.Parameters.AddWithValue("$5", sizePlusOne);
-            command.Parameters.AddWithValue("$6", sexuality);
+            command.Parameters.AddWithValue("@lastScore", lastScore ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@lastId", lastId ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@city", city);
+            command.Parameters.AddWithValue("@sO", sO);
+            command.Parameters.AddWithValue("@sexuality", sexuality);
+            command.Parameters.AddWithValue("@limit", sizePlusOne);
         }
         
         List<User> userList = new List<User>();

@@ -627,7 +627,8 @@ public class QuizAppService : IQuizAppService
             Fidelity = 0,
             Work = 0,
             Religion = 0,
-            Home = 0
+            Home = 0,
+            Total = 0
         };
         foreach (var (topicId, percent) in percentages)
         {
@@ -639,8 +640,9 @@ public class QuizAppService : IQuizAppService
             if (value == "Home") res.Home = percent;
             if (value == "Fidelity") res.Fidelity = percent;
             if (value == "Religion") res.Religion = percent;
-
         }
+
+        res.Total = QuizService.QuizResults(quiz, answers).Result;
         
         watch.Stop();
         Console.WriteLine($"⏱️ Tempo SEQUENCIAL: {watch.ElapsedMilliseconds} ms");

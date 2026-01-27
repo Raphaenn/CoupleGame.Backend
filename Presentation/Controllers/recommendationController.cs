@@ -8,11 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("recommendation")]
 public class RecommendationController : ControllerBase
 {
     public record struct VoteRequest(string LadderId, string UserId, string User2Id, InteractionType Interaction, string Idp);
-    public record struct GetRecRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid? UserId);
+    public record struct GetRecRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid UserId);
     public record struct InteractionRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid? UserId);
     
     // todo - apply app service
@@ -29,7 +29,7 @@ public class RecommendationController : ControllerBase
         try
         {
             var cursor = new RankingCursor(req.LScore, req.UserId, null);
-            CursorPage<UserDto> res = await _recommendationAppService.GetRecommendationService(req.City, req.Sexuality, req.SexualOrientation, 10, cursor, ct);
+            CursorPage<UserDto> res = await _recommendationAppService.GetRecommendationService(req.UserId, req.City, req.Sexuality, req.SexualOrientation, 10, cursor, ct);
             return Ok(res);
         }
         catch (Exception e)
@@ -56,7 +56,7 @@ public class RecommendationController : ControllerBase
         }
     }
 
-    [HttpPost("/users/interaction")]
+    [HttpPost("users/interaction")]
     public async Task<ActionResult<UserDto>> Interaction([FromBody] InteractionRequest req, CancellationToken ct)
     {
         try

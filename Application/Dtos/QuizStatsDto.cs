@@ -9,4 +9,5 @@ public class QuizStatsDto
     public decimal Work { get; set; }
     public decimal Religion { get; set; }
     public decimal Home { get; set; }
+    public decimal? Total { get; set; }
 }

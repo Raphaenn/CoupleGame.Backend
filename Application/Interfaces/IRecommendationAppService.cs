@@ -7,7 +7,7 @@ namespace Application.Interfaces;
 
 public interface IRecommendationAppService
 {
-    Task<CursorPage<UserDto>> GetRecommendationService(string city, string sexuality, string sexualOrientation, int size, RankingCursor? after, CancellationToken ct);
+    Task<CursorPage<UserDto>> GetRecommendationService(Guid userId, string city, string sexuality, string sexualOrientation, int size, RankingCursor? after, CancellationToken ct);
     
     Task<IEnumerable<PersonRating>> SimulateRecommendationService(LadderId ladderId, int size, CancellationToken ct);
 
