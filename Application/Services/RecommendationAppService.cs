@@ -15,17 +15,17 @@ public class RecommendationAppService : IRecommendationAppService
     private readonly IUserRepository _userRepository;
     private readonly IParticipantRatingRepository _recommendationRepository;
 
-    public RecommendationAppService(ILadderRepository ladderRepository, IUserRepository userRepository, IParticipantRatingRepository recommendationRepository)
+    public RecommendationAppService(ILadderRepository ladderRepository, IUserRepository userRepository, IParticipantRatingRepository recommendationRepository )
     {
         _ladderRepository = ladderRepository;
         _userRepository = userRepository;
         _recommendationRepository = recommendationRepository;
     }
 
-    public async Task<CursorPage<UserDto>> GetRecommendationService(string city, string sexuality, string sexualOrientation, int size, RankingCursor? after, CancellationToken ct)
+    public async Task<CursorPage<UserDto>> GetRecommendationService(Guid userId, string city, string sexuality, string sexualOrientation, int size, RankingCursor? after, CancellationToken ct)
     {
         Task<IReadOnlyList<User>> usersByRanking = _userRepository.GetUsersByRanking(city, sexuality, sexualOrientation, sizePlusOne: size - 4, lastScore: after?.LastScore, lastId: after?.LastId, ct);
-        Task<IReadOnlyList<User>> usersByParams = _userRepository.GetUsersByParams(city, sexuality, sexualOrientation, null, null, sizePlusOne: size - 6, ct);
+        Task<IReadOnlyList<User>> usersByParams = _userRepository.GetUsersByParams(userId, city, sexuality, sexualOrientation, null, null, sizePlusOne: size - 6, ct);
         
         /*  Factory
          * Transform the repository requests into params list
@@ -70,7 +70,7 @@ public class RecommendationAppService : IRecommendationAppService
 
     public async Task<IEnumerable<PersonRating>> SimulateRecommendationService(LadderId ladderId, int size, CancellationToken ct)
     {
-        IEnumerable<User> users = await _userRepository.GetUsersByParams("Niterói", "Male", "Heterosexual", null, null, 10, ct);
+        IEnumerable<User> users = await _userRepository.GetUsersByParams(Guid.Parse("fec75dde-c2aa-4432-b5b4-73ddb0bd22bf"), "Niterói", "Male", "Heterosexual", null, null, 10, ct);
         List<PersonRating> pRatingList = new List<PersonRating>();
         // MatchVote vote = new MatchVote();
         List<PersonRating> ranking = new List<PersonRating>();
