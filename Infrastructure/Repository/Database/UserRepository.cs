@@ -252,7 +252,7 @@ public class UserRepository : IUserRepository
               )
               AND u.city = @city AND u.sexual_orientation = @sO AND u.sexuality = @sexuality
               GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight, pr.rating
-              ORDER BY pr.rating DESC, u.id DESC
+              ORDER BY COALESCE(pr.rating, 1500) DESC, u.id DESC
               LIMIT @limit;
               """
             : """
@@ -280,7 +280,7 @@ public class UserRepository : IUserRepository
               LEFT JOIN person_rating pr ON pr.user_id = u.id
               WHERE u.city = @city AND u.sexual_orientation = @sO AND u.sexuality = @sexuality
               GROUP BY u.id, u.name, u.email, u.birthdate, u.height, u.weight, pr.rating
-              ORDER BY pr.rating DESC, u.id DESC
+              ORDER BY COALESCE(pr.rating, 1500) DESC, u.id DESC
               LIMIT @limit;
               """;
         

@@ -12,7 +12,7 @@ namespace Api.Controllers;
 public class RecommendationController : ControllerBase
 {
     public record struct VoteRequest(string LadderId, string UserId, string User2Id, InteractionType Interaction, string Idp);
-    public record struct GetRecRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid UserId);
+    public record struct GetRecRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid UserId, Guid LastId);
     public record struct InteractionRequest(string City, string Sexuality, string SexualOrientation, decimal? LScore, Guid? UserId);
     
     // todo - apply app service
@@ -28,7 +28,7 @@ public class RecommendationController : ControllerBase
     {
         try
         {
-            var cursor = new RankingCursor(req.LScore, req.UserId, null);
+            var cursor = new RankingCursor(req.LScore, req.LastId, null);
             CursorPage<UserDto> res = await _recommendationAppService.GetRecommendationService(req.UserId, req.City, req.Sexuality, req.SexualOrientation, 10, cursor, ct);
             return Ok(res);
         }
