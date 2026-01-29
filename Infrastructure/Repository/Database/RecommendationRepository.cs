@@ -87,7 +87,7 @@ public class RecommendationRepository : ILadderRepository, IParticipantRatingRep
                 {
                     Guid ladder = (Guid)reader["ladder_id"];
                     Guid user = (Guid)reader["user_id"];    
-                    double rating = (double)reader["rating"];
+                    double rating = Convert.ToDouble(reader["rating"]);
                     int wins = (int)reader["wins"];
                     int losses = (int)reader["losses"];
 
