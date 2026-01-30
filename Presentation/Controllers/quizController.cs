@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("[controller]/api")]
+[Route("quiz")]
 public class QuizController : ControllerBase
 {
     private readonly IQuizAppService _quizAppService;
@@ -18,7 +18,7 @@ public class QuizController : ControllerBase
         _quizAppService = quizAppService;
     }
     
-    [HttpPost("/quiz/start")]
+    [HttpPost("start")]
     public async Task<ActionResult<QuizDto>> StartNewQuiz([FromBody] StartQuizRequest request)
     {
         try
@@ -34,7 +34,7 @@ public class QuizController : ControllerBase
         }
     }
     
-    [HttpPost("/quiz/create")]
+    [HttpPost("create")]
     public async Task<ActionResult<QuizDto>> CreateQuiz([FromBody] QuizDto request)
     {
         try
@@ -48,7 +48,7 @@ public class QuizController : ControllerBase
         }
     }
     
-    [HttpGet("/quiz/get/{coupleId}")]
+    [HttpGet("quiz/get/{coupleId}")]
     public async Task<ActionResult<List<QuizDto>>> GetQuizByCoupleId([FromRoute] string coupleId)
     {
         try
@@ -63,7 +63,7 @@ public class QuizController : ControllerBase
         }
     }
     
-    [HttpPost("/quiz/update")]
+    [HttpPost("update")]
     public async Task<ActionResult<QuizDto>> UpdateQuiz([FromBody] QuizRequest request)
     {
         try
@@ -78,7 +78,7 @@ public class QuizController : ControllerBase
         }
     }
     
-    [HttpPost("/quiz/answer-question")]
+    [HttpPost("answer-question")]
     public async Task<ActionResult<QuizDto>> UpdateQuiz([FromBody] QuizAnswerRequest request)
     {
         try
@@ -93,7 +93,7 @@ public class QuizController : ControllerBase
         }
     }
 
-    [HttpGet("/quiz/invited/{id}")]
+    [HttpGet("invited/{id}")]
     public async Task<ActionResult<QuizDto>> GetInvitedQuiz([FromRoute] string id)
     {
         try
@@ -108,7 +108,7 @@ public class QuizController : ControllerBase
     }
 
     // List completed quizzes by couple id
-    [HttpGet("/quiz/list/completed/{id}")]
+    [HttpGet("list/completed/{id}")]
     public async Task<ActionResult<List<QuizDto>>> GetCompletedQuiz([FromRoute] string id)
     {
         try
@@ -137,7 +137,7 @@ public class QuizController : ControllerBase
     //     }
     // }
     
-    [HttpGet("/quiz/result/{id}")]
+    [HttpGet("result/{id}")]
     public async Task<ActionResult<QuizDto>> GetQuizResult([FromRoute] string id)
     {
         try
@@ -149,7 +149,7 @@ public class QuizController : ControllerBase
         }
     }
 
-    [HttpGet("/quiz/result/stats/{id}")]
+    [HttpGet("result/stats/{id}")]
     public async Task<ActionResult<QuizDto>> GetQuizResultStats([FromRoute] string id)
     {
         try
@@ -162,7 +162,7 @@ public class QuizController : ControllerBase
         }
     }
 
-    [HttpGet("/global/stats/{id}")]
+    [HttpGet("global/stats/{id}")]
     public async Task<ActionResult<QuizStatsDto>> GetGlobalStatusByCouple([FromRoute] string id)
     {
         try
@@ -175,7 +175,7 @@ public class QuizController : ControllerBase
         }
     }
     
-    [HttpPost("/quiz/change-status")]
+    [HttpPost("change-status")]
     public async Task<ActionResult<QuizDto>> UpdateStatus([FromBody] UpdateQuizRequest req)
     {
         try
@@ -189,7 +189,7 @@ public class QuizController : ControllerBase
         }
     }
     
-    [HttpGet("/quiz/open-list/{userId}")]
+    [HttpGet("open-list/{userId}")]
     public async Task<ActionResult<QuizDto>> ListOpenQuiz([FromRoute] string userId)
     {
         try
