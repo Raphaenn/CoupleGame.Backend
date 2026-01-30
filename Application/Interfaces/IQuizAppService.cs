@@ -24,4 +24,6 @@ public interface IQuizAppService
     Task<List<QuizDto>> ListCompletedQuizByCoupleId(string coupleId);
 
     Task<QuizStatsDto> GetQuizStats(string quizId);
+    
+    Task<GlobalStatsDto> GetGlobalQuizStats(string coupleId);
 }

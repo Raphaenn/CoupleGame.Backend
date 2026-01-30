@@ -11,3 +11,15 @@ public class QuizStatsDto
     public decimal Home { get; set; }
     public decimal? Total { get; set; }
 }
+
+public class GlobalStatsDto
+{
+    public Guid CoupleId { get; set; }
+    public decimal Finance { get; set; }
+    public decimal Sex { get; set; }
+    public decimal Fidelity { get; set; }
+    public decimal Work { get; set; }
+    public decimal Religion { get; set; }
+    public decimal Home { get; set; }
+    public decimal? Total { get; set; }
+}

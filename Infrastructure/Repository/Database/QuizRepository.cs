@@ -171,7 +171,7 @@ public class QuizRepository : IQuizRepository
         await using (var command = new NpgsqlCommand())
         {
             command.Connection = conn;
-            command.CommandText = "SELECT * FROM quiz WHERE couple_id = @coupleId AND status = 'Active'";
+            command.CommandText = "SELECT * FROM quiz WHERE couple_id = @coupleId";
 
             command.Parameters.AddWithValue("@coupleId", coupleId);
 

@@ -161,6 +161,19 @@ public class QuizController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("/global/stats/{id}")]
+    public async Task<ActionResult<QuizStatsDto>> GetGlobalStatusByCouple([FromRoute] string id)
+    {
+        try
+        {
+            var result = await _quizAppService.GetGlobalQuizStats(id);
+            return Ok(result);
+        } catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
     
     [HttpPost("/quiz/change-status")]
     public async Task<ActionResult<QuizDto>> UpdateStatus([FromBody] UpdateQuizRequest req)

@@ -13,15 +13,13 @@ public class QuizAppService : IQuizAppService
     private readonly IQuestionRepository _questionRepository;
     private readonly IAnswerRepository _answerRepository;
     private readonly ICoupleRepository _coupleRepository;
-    private readonly ITopicRepository _topicRepository;
 
-    public QuizAppService(IQuizRepository quizRepository, IQuestionRepository questionRepository, IAnswerRepository answerRepository, ICoupleRepository coupleRepository, ITopicRepository topicRepository)
+    public QuizAppService(IQuizRepository quizRepository, IQuestionRepository questionRepository, IAnswerRepository answerRepository, ICoupleRepository coupleRepository)
     {
         _quizRepository = quizRepository;
         _questionRepository = questionRepository;
         _answerRepository = answerRepository;
         _coupleRepository = coupleRepository;
-        _topicRepository = topicRepository;
     }
 
     public async Task<QuizDto> StartQuiz(string coupleId, string questionId)
@@ -647,5 +645,132 @@ public class QuizAppService : IQuizAppService
         watch.Stop();
         Console.WriteLine($"⏱️ Tempo SEQUENCIAL: {watch.ElapsedMilliseconds} ms");
         return res;
+    }
+
+    public async Task<GlobalStatsDto> GetGlobalQuizStats(string coupleId)
+    {
+        List<Quiz> quizList = await _quizRepository.ListQuizByCoupleId(Guid.Parse(coupleId));
+        List<QuizStatsDto> quizStats = new List<QuizStatsDto>();
+        foreach (var quiz in quizList)
+        {
+            List<Answers> answers = await _answerRepository.ListAnswersByQuizId(quiz.Id);
+            List<Guid> questionIds = quiz.GetType()
+                .GetProperties()
+                .Where(p => p.Name.StartsWith("Question"))
+                .Select(p => p.GetValue(quiz))
+                .OfType<Guid>()
+                .ToList();
+            
+            List<string> answersContent1 = answers[0].GetType()
+                .GetProperties()
+                .Where(p => p.Name.StartsWith("Answer"))
+                .Select(p => p.GetValue(answers[0]))
+                .OfType<string>()
+                .ToList();
+
+            List<string> answersContent2 = answers[1].GetType().GetProperties().Where(p => p.Name.StartsWith("Answer")).Select(p => p.GetValue(answers[1])).OfType<string>().ToList();
+            
+            foreach (var q in questionIds)
+            {
+                Question quest = await _questionRepository.GetSingleQuestion(q); 
+                quiz.AddQuestion(quest);
+            }
+
+            // get user 1 worksheet1
+            List<TopicStats> worksheet1 = new List<TopicStats>();
+            foreach (var (a, q) in answersContent1.Zip(quiz.QuestionsList))
+            {
+                TopicStats ts = new TopicStats
+                {
+                    TopicId = q.TopicId,
+                    Answer = a
+                };
+
+                worksheet1.Add(ts);
+            }
+
+            List<TopicStats> worksheet2 = new List<TopicStats>();
+            foreach (var (a, q) in answersContent2.Zip(quiz.QuestionsList))
+            {
+                TopicStats ts = new TopicStats
+                {
+                    TopicId = q.TopicId,
+                    Answer = a
+                };
+
+                worksheet2.Add(ts);
+            }
+
+            IEnumerable<IGrouping<Guid?, TopicStats>> parsed1 = worksheet1.GroupBy(t => t.TopicId).ToList();
+            IEnumerable<IGrouping<Guid?, TopicStats>> parsed2 = worksheet2.GroupBy(t => t.TopicId).ToList();
+        
+            // var keys1 = parsed1
+            //     .SelectMany(g => g.Select(t => (g.Key, t.Ans)))
+            //     .ToHashSet();
+            //
+            // var keys2 = parsed2
+            //     .SelectMany(g => g.Select(t => (g.Key, t.Ans)))
+            //     .ToHashSet();
+            
+            // var comuns = keys1.Intersect(keys2);
+            // var diferentes = keys1.Except(keys2);
+            
+            Dictionary<Guid?, decimal> percentages = TopicCompatibilityService.CompareByTopicPercent(parsed1, parsed2);
+
+            // topics
+            Dictionary<string, string> topics = new Dictionary<string, string>()
+            {
+                {"e6128121-b023-4683-b20d-91126aa22c9c", "Finance"},
+                {"6ba6a519-9090-4534-90ba-06c7ed8506c2", "Religion"},
+                {"82382bc1-8213-428a-9ccd-cd9be564451c", "Fidelity" },
+                {"bb386817-bbcf-454c-bece-9d779088514c", "Sex"},
+                {"bc2e707d-adb9-482e-ae5f-3b5c87a72879", "Work"},
+                {"f0ab27e6-ec6a-4d1f-b8c3-3224211831b7", "Home"},
+            };
+            
+            QuizStatsDto res = new QuizStatsDto
+            {
+                QuizId = quiz.Id,
+                Finance = 0,
+                Sex = 0,
+                Fidelity = 0,
+                Work = 0,
+                Religion = 0,
+                Home = 0,
+                Total = 0
+            };
+            foreach (var (topicId, percent) in percentages)
+            {
+                topics.TryGetValue(topicId.ToString(), out var value);
+                
+                if (value == "Finance") res.Finance = percent;
+                if (value == "Work") res.Work = percent;
+                if (value == "Sex") res.Sex = percent;
+                if (value == "Home") res.Home = percent;
+                if (value == "Fidelity") res.Fidelity = percent;
+                if (value == "Religion") res.Religion = percent;
+            }
+
+            res.Total = QuizService.QuizResults(quiz, answers).Result;
+            quizStats.Add(res);
+        }
+            
+        if (quizStats.Count == 0)
+            return new GlobalStatsDto { /* tudo 0 */ };
+
+        var global = new GlobalStatsDto
+        {
+            CoupleId = Guid.Parse(coupleId), // ou null se permitir
+            Finance  = quizStats.Average(s => s.Finance),
+            Sex      = quizStats.Average(s => s.Sex),
+            Fidelity = quizStats.Average(s => s.Fidelity),
+            Work     = quizStats.Average(s => s.Work),
+            Religion = quizStats.Average(s => s.Religion),
+            Home     = quizStats.Average(s => s.Home),
+            Total    = quizStats.Average(s => s.Total),
+        };
+
+        return global;
+
     }
 }
