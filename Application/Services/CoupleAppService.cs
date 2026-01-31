@@ -71,4 +71,24 @@ public class CoupleAppService : ICoupleAppService
             throw new Exception(e.Message);
         }
     }
+
+    public async Task<CoupleDto> GetCouplePartner(Guid userId)
+    {
+        Couple? couple = await _coupleRepository.GetLongTermCouple(userId);
+        if (couple == null)
+        {
+            throw new ArgumentException("Wrong couple id");
+        }
+
+        CoupleDto parser = new CoupleDto
+        {
+            Id = couple.Id.ToString(),
+            UserOneId = couple.CoupleOne.ToString(),
+            UserTwoId = couple.CoupleTwo.ToString(),
+            Type = couple.Type.ToString(),
+            Status = couple.Status.ToString()
+        };
+        
+        return parser;
+    }
 }

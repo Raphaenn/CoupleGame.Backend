@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("[controller]/api")]
+[Route("couple")]
 public class CoupleController : ControllerBase
 {
     public record IAddCouple(string CoupleId, string UserId);
@@ -17,7 +17,7 @@ public class CoupleController : ControllerBase
         _coupleAppService = coupleAppService;
     }
 
-    [HttpPost("/couple/start/")]
+    [HttpPost("start/")]
     public async Task<ActionResult<CoupleDto?>> CreateCouple([FromBody] CoupleRequest coupleRequest)
     {
         try
@@ -31,13 +31,27 @@ public class CoupleController : ControllerBase
         }
     }
 
-    [HttpPost("/couple/add-member")]
+    [HttpPost("add-member")]
     public async Task<ActionResult> AddMember([FromBody] IAddCouple body)
     {
         try
         {
             await _coupleAppService.AddSecondMember(body.CoupleId, body.UserId);
             return Ok();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpGet("/get-partner/{id}")]
+    public async Task<ActionResult<CoupleDto>> GetCouplePartner([FromRoute] Guid id)
+    {
+        try
+        {
+            CoupleDto couple = await _coupleAppService.GetCouplePartner(id);
+            return Ok(couple);
         }
         catch (Exception e)
         {

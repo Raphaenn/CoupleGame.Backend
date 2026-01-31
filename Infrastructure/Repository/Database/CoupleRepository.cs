@@ -155,4 +155,48 @@ public class CoupleRepository : ICoupleRepository
         }
         return null;
     }
+
+    public async Task<Couple?> GetLongTermCouple(Guid userId)
+    {
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM couple WHERE (couple_one = @userId OR couple_two = @userId) AND type IN ('Dating', 'Married')";
+                command.Parameters.AddWithValue("@userId", userId);
+
+                var reader = await command.ExecuteReaderAsync();
+                
+                if (!await reader.ReadAsync())
+                {
+                    return null;
+                }
+                
+                var typeString = reader.GetString(reader.GetOrdinal("type"));
+                var statusString = reader.GetString(reader.GetOrdinal("status"));
+
+                if (!Enum.TryParse<CoupleTypes>(typeString, ignoreCase: true, out var type))
+                {
+                    throw new InvalidOperationException($"Invalid CoupleType: {typeString}");
+                }
+
+                if (!Enum.TryParse<CoupleStatus>(statusString, ignoreCase: true, out var status))
+                {
+                    throw new InvalidOperationException($"Invalid CoupleStatus: {statusString}");
+                }
+
+                return Couple.Rehydrate(
+                    id: reader.GetGuid(reader.GetOrdinal("id")),
+                    coupleOne: reader.GetGuid(reader.GetOrdinal("couple_one")),
+                    coupleTwo: reader.IsDBNull(reader.GetOrdinal("couple_two"))
+                        ? null
+                        : reader.GetGuid(reader.GetOrdinal("couple_two")),
+                    type: type,
+                    status: status,
+                    createdAt: reader.GetDateTime(reader.GetOrdinal("created_at"))
+                );
+            }
+        }
+    }
 }
