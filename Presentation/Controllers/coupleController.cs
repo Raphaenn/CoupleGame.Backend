@@ -45,7 +45,7 @@ public class CoupleController : ControllerBase
         }
     }
 
-    [HttpGet("/get-partner/{id}")]
+    [HttpGet("get-partner/{id}")]
     public async Task<ActionResult<CoupleDto>> GetCouplePartner([FromRoute] Guid id)
     {
         try
