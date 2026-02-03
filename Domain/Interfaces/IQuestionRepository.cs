@@ -7,4 +7,6 @@ public interface IQuestionRepository
     Task<Question> GetSingleQuestion(Guid questionId);
 
     Task<List<Question>> GetQuestionsByTopicId(Guid topicId);
+
+    Task<List<Question>> GetAllQuestions(CancellationToken ct);
 }

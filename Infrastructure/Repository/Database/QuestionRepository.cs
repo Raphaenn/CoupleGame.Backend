@@ -77,4 +77,45 @@ public class QuestionRepository : IQuestionRepository
             }
         }
     }
+
+    public async Task<List<Question>> GetAllQuestions(CancellationToken ct)
+    {
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var cmd = new NpgsqlCommand())
+            {
+                cmd.Connection = conn;
+                cmd.CommandText = "SELECT * FROM questions";
+                
+                await using var reader = await cmd.ExecuteReaderAsync(ct);
+                // cache de ordinais (melhor performance)
+                int ordId = reader.GetOrdinal("id");
+                int ordTopic = reader.GetOrdinal("topic_id");
+                int ordContent = reader.GetOrdinal("question");
+                int ordAnswer1 = reader.GetOrdinal("answer_1");
+                int ordAnswer2 = reader.GetOrdinal("answer_2");
+                int ordAnswer3 = reader.GetOrdinal("answer_3");
+                int ordAnswer4 = reader.GetOrdinal("answer_4");
+
+                List<Question> questions = new List<Question>();
+                
+                while (await reader.ReadAsync(ct))
+                {
+                    var id       = reader.GetGuid(ordId);
+                    var topic  = reader.GetGuid(ordTopic);
+                    var question  = reader.GetString(ordContent);
+                    var answers1 = reader.GetString(ordAnswer1);
+                    var answers2    = reader.GetString(ordAnswer2);    
+                    var answers3    = reader.GetString(ordAnswer3);    
+                    var answers4    = reader.GetString(ordAnswer4);
+
+                    Question q = new Question(id, topic, question, answers1, answers2, answers3, answers4);
+                    questions.Add(q);
+
+                }
+
+                return questions;
+            }
+        }
+    }
 }

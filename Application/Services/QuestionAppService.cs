@@ -125,4 +125,30 @@ public class QuestionAppService : IQuestionAppService
             throw new Exception(message: e.Message);
         }
     }
+
+    public async Task<List<QuestionDto>> ListAllQuestions(CancellationToken ct)
+    {
+        List<QuestionDto> questionList = new List<QuestionDto>();
+        List<Question> questions = await _questionRepository.GetAllQuestions(ct);
+        if (questions.Count <= 0)
+        {
+            throw new Exception("Invalid request question list");
+        }
+
+        foreach (Question q in questions)
+        {
+            QuestionDto questionDto = new QuestionDto
+            {
+                Id = q.Id.ToString(),
+                TopicId = q.TopicId.ToString(),
+                QuestionText = q.QuestionText,
+                Answer1 = q.Answer1,
+                Answer2 = q.Answer2,
+                Answer3 = q.Answer3,
+                Answer4 = q.Answer4
+            };
+            questionList.Add(questionDto);
+        }
+        return questionList;
+    }
 }

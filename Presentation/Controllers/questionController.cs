@@ -7,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("[controller]/api")]
+[Route("question")]
 public class QuestionController : ControllerBase
 {
+    public record PagedResponse<T>(IReadOnlyList<T> Data, int Total);
     private readonly IQuestionAppService _questionAppService;
 
     public QuestionController(IQuestionAppService questionAppService)
@@ -17,7 +18,7 @@ public class QuestionController : ControllerBase
         _questionAppService = questionAppService;
     }
 
-    [HttpGet("/question/data/{questionId}")]
+    [HttpGet("data/{questionId}")]
     public async Task<ActionResult<QuestionDto>> GetQuestion([FromRoute] string questionId)
     {
         try
@@ -31,7 +32,7 @@ public class QuestionController : ControllerBase
         }
     }
 
-    [HttpGet("/question/search/{topicId}")]
+    [HttpGet("search/{topicId}")]
     public async Task<ActionResult<List<QuestionDto>>> ListQuestionsByTopic(string topicId)
     {
         try
@@ -45,7 +46,7 @@ public class QuestionController : ControllerBase
         }
     }
     
-    [HttpGet("/question/random/{topicId}")]
+    [HttpGet("random/{topicId}")]
     public async Task<ActionResult<List<QuestionDto>>> GetRandomQuestion([FromRoute] string topicId, [FromQuery] string? quizId)
     {
         try
@@ -61,6 +62,26 @@ public class QuestionController : ControllerBase
         catch (Exception e)
         {
             return BadRequest(e.Message);
+        }
+    }
+
+    [HttpGet("all")]
+    public async Task<ActionResult<ActionResult<PagedResponse<QuestionDto>>>> GetAllQuestions(CancellationToken ct)
+    {
+        try
+        {
+            List<QuestionDto> res = await _questionAppService.ListAllQuestions(ct);
+            var result = new Dictionary<string, object>
+            {
+                { "data", res },
+                { "total", res.Count }
+            };
+            
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
     }
 }
