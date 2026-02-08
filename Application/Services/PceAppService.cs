@@ -54,18 +54,17 @@ public class PceAppService : IPceAppServices
         
         Couple coupleData = await _coupleRepository.SearchCoupleById(coupleId);
 
-        // List<Guid> userIds = new List<Guid>();
-        // userIds.Add(coupleData.CoupleOne);
-        // userIds.Add(coupleData.CoupleTwo);
         if (!coupleData.CoupleTwo.HasValue)
             throw new InvalidOperationException("Invalid couple");
         
         var userIds = new[] { coupleData.CoupleOne, coupleData.CoupleTwo.Value };
 
+        // parallel query
         var answersTask = Task.WhenAll(userIds.Select(id => _pceAnswersRepository.ListPceAnswer(id, ct)));
         Task<List<Topic>> topicsTask = _topicRepository.ListAllTopics();
         await Task.WhenAll(answersTask, topicsTask);
         
+        // his and her answers array
         List<PceAnswer>[] answers = await answersTask;
         List<Topic> topics = await topicsTask;
         
@@ -96,60 +95,22 @@ public class PceAppService : IPceAppServices
                 result.AddPceAnswers(ta);
             }
         }
-        // var answerTask = new List<Task<List<PceAnswer>>>();
-        // var seen = new HashSet<(Guid userId, Guid topicId)>();
-        //
-        // foreach (var answerList in answers)
-        // {
-        //     foreach (var answer in answerList)
-        //     {
-        //         if (answer.TopicId == topicX)
-        //         {
-        //             var key = (answer.UserId, answer.TopicId); // ajuste conforme seu modelo
-        //
-        //             if (seen.Add(key))
-        //             {
-        //                 answerTask.Add(_pceAnswersRepository.ListPceAnswer(answer.UserId, ct));
-        //             }
-        //         }
-        //     }
-        // }
-        
-        // foreach (var result in resultList)
-        // {
-        //     if (!answersByTopic.TryGetValue(result.TopicId, out var topicAnswers))
-        //         continue;
-        //
-        //     // Exemplo de regras — ajuste conforme seu domínio
-        //     result.TotalQuestions = topicAnswers
-        //         .Select(a => a.QuestionId)
-        //         .Distinct()
-        //         .Count();
-        //
-        //     result.AnsweredByBoth = topicAnswers
-        //         .GroupBy(a => a.QuestionId)
-        //         .Count(g => g.Count() == 2);
-        //
-        //     result.MatchPercentage = result.TotalQuestions == 0
-        //         ? 0
-        //         : (decimal)result.AnsweredByBoth / result.TotalQuestions * 100;
-        // }
-        
-        // var fetchedAnswers = await Task.WhenAll(tasks); // List<PceAnswer>[]
-        //
-        // var resultList = fetchedAnswers
-        //     .SelectMany(x => x)
-        //     .Select(a => new PceResult
-        //     {
-        //         Id = Guid.NewGuid(),
-        //         QuizId = pce.Id,
-        //         TopicId = a.TopicId,
-        //         QuestionId = a.QuestionId
-        //     })
-        //     .ToList();
 
-        List<PceResultDto> res = new List<PceResultDto>();
+        
+        List<PceResultDto> pceResultDto = new List<PceResultDto>();
+        foreach (var pceData in resultList)
+        {
+            PceResultDto dto = new PceResultDto
+            {
+                Id = pceData.Id,
+                PceId = pceData.PceId,
+                TopicId = pceData.TopicId,
+                TopicName = pceData.TopicName,
+                PceAnswersList = pceData.PceAnswers
+            };
+            pceResultDto.Add(dto);
+        }
 
-        return res;
+        return pceResultDto;
     }
 }

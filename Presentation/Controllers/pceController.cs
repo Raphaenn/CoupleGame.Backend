@@ -10,7 +10,7 @@ public class PceController : ControllerBase
 {
     private readonly IPceAppServices _pceAppServices;
     
-    public record struct SaveAnswerBody(Guid UserId, Guid QuizId, Guid QuestionId, Guid TopicId, string Content);
+    public record struct SaveAnswerBody(Guid UserId, Guid PceId, Guid QuestionId, Guid TopicId, string Content);
 
     public record struct GetPceQuizReq(Guid CoupleId);
 
@@ -24,7 +24,7 @@ public class PceController : ControllerBase
     {
         try
         {
-            await _pceAppServices.SaveAnswers(req.UserId, req.QuizId, req.QuestionId, req.TopicId, req.Content, ct);
+            await _pceAppServices.SaveAnswers(req.UserId, req.PceId, req.QuestionId, req.TopicId, req.Content, ct);
             return NoContent();
         }
         catch (Exception e)
@@ -52,7 +52,7 @@ public class PceController : ControllerBase
     {
         try
         {
-            List<PceResultDto> result =  await _pceAppServices.GetPceResult(id, ct);
+            List<PceResultDto> result = await _pceAppServices.GetPceResult(id, ct);
             return Ok(result);
         }
         catch (Exception e)

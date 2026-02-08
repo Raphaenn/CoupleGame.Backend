@@ -21,12 +21,13 @@ public class PceAnswersRepository : IPceAnswersRepository
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "INSERT INTO pce_answer(id, user_id, quiz_id, question_id, content, created_at) VALUES (@id, @userId, @quizId, @questionId, @content, @createdAt)";
+                command.CommandText = "INSERT INTO pce_answer(id, user_id, pce_id, question_id, topic_id, content, created_at) VALUES (@id, @userId, @pcrId, @questionId, @topicId, @content, @createdAt)";
 
                 command.Parameters.AddWithValue("@id", answer.Id);
                 command.Parameters.AddWithValue("@userId", answer.UserId);
-                command.Parameters.AddWithValue("@quizId", answer.QuizId);
+                command.Parameters.AddWithValue("@pcrId", answer.PceId);
                 command.Parameters.AddWithValue("@questionId", answer.QuestionId);
+                command.Parameters.AddWithValue("@topicId", answer.TopicId);
                 command.Parameters.AddWithValue("@content", answer.Content);
                 command.Parameters.AddWithValue("@createdAt", answer.CreatedAt);
 
@@ -42,7 +43,7 @@ public class PceAnswersRepository : IPceAnswersRepository
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "SELECT FROM pce_answer WHERE user_id = @userId";
+                command.CommandText = "SELECT * FROM pce_answer WHERE user_id = @userId";
 
                 command.Parameters.AddWithValue("@userId", userId);
 
@@ -55,7 +56,7 @@ public class PceAnswersRepository : IPceAnswersRepository
 
                 var ordId = reader.GetOrdinal("id");
                 var ordUser = reader.GetOrdinal("user_id");
-                var ordQuiz = reader.GetOrdinal("quiz_id");
+                var ordPce = reader.GetOrdinal("pce_id");
                 var ordQuest = reader.GetOrdinal("question_id");
                 var ordTopic = reader.GetOrdinal("topic_id");
                 var ordContent = reader.GetOrdinal("content");
@@ -67,13 +68,13 @@ public class PceAnswersRepository : IPceAnswersRepository
                 {
                     Guid id = reader.GetGuid(ordId);
                     Guid user = reader.GetGuid(ordUser);
-                    Guid quiz = reader.GetGuid(ordQuiz);
+                    Guid pce = reader.GetGuid(ordPce);
                     Guid question = reader.GetGuid(ordQuest);
                     Guid topic = reader.GetGuid(ordTopic);
                     string content = reader.GetString(ordContent);
                     DateTime createdAt = reader.GetDateTime(ordCreateAt);
                     
-                    PceAnswer answer = PceAnswer.Rehydrate(id, user, quiz, question, topic, content, createdAt);
+                    PceAnswer answer = PceAnswer.Rehydrate(id, user, pce, question, topic, content, createdAt);
                     answerList.Add(answer);
                 }
 

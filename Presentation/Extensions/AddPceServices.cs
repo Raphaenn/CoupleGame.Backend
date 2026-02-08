@@ -1,3 +1,5 @@
+using Application.Interfaces;
+using Application.Services;
 using Domain.Interfaces.IPce;
 using Infrastructure.Repository.Database;
 
@@ -9,6 +11,7 @@ public static class PceServiceCollectionExtensions
     {
         services.AddScoped<IPceRepository, PceRepository>();
         services.AddScoped<IPceAnswersRepository, PceAnswersRepository>();
+        services.AddScoped<IPceAppServices, PceAppService>();
 
         return services;
     } 

@@ -6,17 +6,16 @@ public class PceDto
 {
     public Guid Id { get; set; }
     public Guid CoupleId { get; set; }
-    public string Status { get; set; }
+    public string Status { get; set; } = String.Empty;
     public DateTime CreatedAt { get; set; }
 }
 
 public class PceResultDto
 {
     public Guid Id { get; set; }
-    public Guid QuizId { get; set; }
+    public Guid PceId { get; set; }
     public Guid TopicId { get; set; }
-    public Guid QuestionId { get; set; }
+    public string TopicName { get; set; } = String.Empty;
 
-    // private readonly List<PceAnswer> _premiumAnswersList = new List<PceAnswer>();
-    // public IReadOnlyList<PceAnswer> PremiumAnswers => _premiumAnswersList.AsReadOnly();    
+    public IReadOnlyList<PceAnswer> PceAnswersList { get; set; }
 }
