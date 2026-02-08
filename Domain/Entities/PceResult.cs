@@ -9,12 +9,18 @@ public class PceResult
     // questionId, 
     // answers: [{ answeredBy: 'A', answer: firstAnswer.answerText, userId: firstAnswer.userId }, { answeredBy: 'B',      answer: answerText, userId: userData?.id }],
     public Guid Id { get; set; }
-    public Guid QuizId { get; set; }
+    public Guid PceId { get; set; }
     public Guid TopicId { get; set; }
-    public Guid QuestionId { get; set; }
+    public string TopicName { get; set; } = String.Empty;
 
-    private readonly List<PceAnswer> _premiumAnswersList = new List<PceAnswer>();
-    public IReadOnlyList<PceAnswer> PremiumAnswers => _premiumAnswersList.AsReadOnly();
+    private readonly List<PceAnswer> _pceAnswersList = new List<PceAnswer>();
+    public IReadOnlyList<PceAnswer> PceAnswers => _pceAnswersList.AsReadOnly();
     
     // public string QuestionContent { get; set; }
-}
+
+    public void AddPceAnswers(PceAnswer answer)
+    {
+        // todo: add validations
+        _pceAnswersList.Add(answer);
+    }
+}   

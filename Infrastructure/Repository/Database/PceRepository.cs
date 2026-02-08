@@ -1,24 +1,23 @@
 using System.Data;
 using Domain.Entities;
 using Domain.Interfaces.IPce;
-using Domain.Interfaces.IPCE;
 using Infrastructure.Data.Connections;
 using Npgsql;
 
 namespace Infrastructure.Repository.Database;
 
-public class PceQuizRepository : IPceQuizRepository
+public class PceRepository : IPceRepository
 {
     private readonly PostgresConnection _postgresConnection;
 
-    public PceQuizRepository(PostgresConnection postgresConnection)
+    public PceRepository(PostgresConnection postgresConnection)
     {
         _postgresConnection = postgresConnection;
     }
 
-    public async Task CreatePremiumQuiz(Pce quiz)
+    public async Task CreatePce(Pce quiz, CancellationToken ct)
     {
-        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct))
         {
             await using (var command = new NpgsqlCommand())
             {
@@ -30,14 +29,14 @@ public class PceQuizRepository : IPceQuizRepository
                 command.Parameters.AddWithValue("@status", quiz.Status);
                 command.Parameters.AddWithValue("@createdAt", quiz.CreatedAt);
 
-                await command.ExecuteNonQueryAsync();
+                await command.ExecuteNonQueryAsync(ct);
             }
         }
     }
 
-    public async Task<Pce> GetPremiumQuizByCouple(Guid coupleId)
+    public async Task<Pce?> GetPceByCouple(Guid coupleId, CancellationToken ct)
     {
-        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct))
         {
             await using (var command = new NpgsqlCommand())
             {
@@ -46,9 +45,9 @@ public class PceQuizRepository : IPceQuizRepository
 
                 command.Parameters.AddWithValue("@coupleId", coupleId);
 
-                await using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow);
+                await using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow, ct);
 
-                if (!await reader.ReadAsync())
+                if (!await reader.ReadAsync(ct))
                     return null;
 
                 var ordId = reader.GetOrdinal("id");
@@ -65,7 +64,6 @@ public class PceQuizRepository : IPceQuizRepository
                 {
                     parsedStatus = PceStatus.Pending;
                 }
-                
 
                 Pce response = Pce.Rehydrate(id, couple, parsedStatus, date);
 

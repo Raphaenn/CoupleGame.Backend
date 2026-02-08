@@ -1,10 +1,10 @@
 using Domain.Entities;
 
-namespace Domain.Interfaces.IPCE;
+namespace Domain.Interfaces.IPce;
 
-public interface IPceEAnswersRepository
+public interface IPceAnswersRepository
 {
-    Task CreatePremiumAnswer(PceAnswer answer, CancellationToken ct);
+    Task CreatePceAnswer(PceAnswer answer, CancellationToken ct);
     
-    Task<List<PceAnswer>> ListPremiumAnswerByTopic(Guid userId, Guid questionId, CancellationToken ct);
+    Task<List<PceAnswer>> ListPceAnswer(Guid userId, CancellationToken ct);
 }
