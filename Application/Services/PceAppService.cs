@@ -106,7 +106,20 @@ public class PceAppService : IPceAppServices
                 PceId = pceData.PceId,
                 TopicId = pceData.TopicId,
                 TopicName = pceData.TopicName,
-                PceAnswersList = pceData.PceAnswers
+                Questions = pceData.PceAnswers
+                    .GroupBy(a => a.QuestionId)
+                    .Select(g => new PceQuestionAnswersDto
+                    {
+                        QuestionId = g.Key,
+                        Answers = g.Select(a => new PceAnswerDto
+                        {
+                            UserId = a.UserId,          // precisa existir no PceAnswer
+                            Content = a.Content, 
+                            QuestionId = a.QuestionId,// ajuste pro seu campo
+                            CreatedAt = a.CreatedAt
+                        }).ToList()
+                    })
+                    .ToList()
             };
             pceResultDto.Add(dto);
         }

@@ -66,7 +66,7 @@ public class QuestionController : ControllerBase
     }
 
     [HttpGet("all")]
-    public async Task<ActionResult<ActionResult<PagedResponse<QuestionDto>>>> GetAllQuestions(CancellationToken ct)
+    public async Task<ActionResult<PagedResponse<QuestionDto>>> GetAllQuestions(CancellationToken ct)
     {
         try
         {
