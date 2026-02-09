@@ -4,9 +4,9 @@ namespace Domain.Entities;
 
 public enum PceStatus
 {
-    Active,
-    Pending,
-    Completed
+    Pending = 0,
+    Active = 1,
+    Completed = 2
 }
 
 // Partner Compatibility Evaluation
@@ -14,7 +14,7 @@ public class Pce
 {
     public Guid Id { get; private set; }
     public Guid CoupleId { get; private set; }
-    public PceStatus Status { get; private set; } = PceStatus.Pending;
+    public PceStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
 
     private readonly List<Question> _premiumQuestionsList = new List<Question>();
@@ -31,7 +31,7 @@ public class Pce
         CreatedAt = createdAt;
     }
 
-    public static Pce StartPremiumQuiz(Guid coupleId, Guid question1)
+    public static Pce StartPce(Guid coupleId)
     {
         return new Pce(Guid.NewGuid(), coupleId, PceStatus.Pending, DateTime.Now);
     }
@@ -41,7 +41,7 @@ public class Pce
         return new Pce(id, coupleId, PceStatus.Pending, DateTime.Now);
     }
 
-    public void AddPremiumQuestion(Question question)
+    public void AddPceQuestion(Question question)
     {
         if (question == null)
             throw new ArgumentNullException(nameof(question));

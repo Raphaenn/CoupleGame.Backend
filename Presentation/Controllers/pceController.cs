@@ -13,10 +13,25 @@ public class PceController : ControllerBase
     public record struct SaveAnswerBody(Guid UserId, Guid PceId, Guid QuestionId, Guid TopicId, string Content);
 
     public record struct GetPceQuizReq(Guid CoupleId);
+    public record struct InitiatePceReq(Guid CoupleId);
 
     public PceController(IPceAppServices pceAppServices)
     {
         _pceAppServices = pceAppServices;
+    }
+
+    [HttpPost("init")]
+    public async Task<ActionResult> InitCouplePce([FromBody] InitiatePceReq req, CancellationToken ct)
+    {
+        try
+        {
+            await _pceAppServices.InitNewPce(req.CoupleId, ct);
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     [HttpPost("save-answer")]

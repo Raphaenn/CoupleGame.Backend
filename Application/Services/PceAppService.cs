@@ -113,9 +113,9 @@ public class PceAppService : IPceAppServices
                         QuestionId = g.Key,
                         Answers = g.Select(a => new PceAnswerDto
                         {
-                            UserId = a.UserId,          // precisa existir no PceAnswer
+                            UserId = a.UserId,
                             Content = a.Content, 
-                            QuestionId = a.QuestionId,// ajuste pro seu campo
+                            QuestionId = a.QuestionId,
                             CreatedAt = a.CreatedAt
                         }).ToList()
                     })
@@ -125,5 +125,12 @@ public class PceAppService : IPceAppServices
         }
 
         return pceResultDto;
+    }
+
+    public async Task InitNewPce(Guid coupleId, CancellationToken ct)
+    {
+        // todo: check if already exists a valid pce
+        Pce pce = Pce.StartPce(coupleId);
+        await _pceRepository.CreatePce(pce, ct);
     }
 }

@@ -15,7 +15,7 @@ public class PceRepository : IPceRepository
         _postgresConnection = postgresConnection;
     }
 
-    public async Task CreatePce(Pce quiz, CancellationToken ct)
+    public async Task CreatePce(Pce pce, CancellationToken ct)
     {
         await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync(ct))
         {
@@ -24,10 +24,10 @@ public class PceRepository : IPceRepository
                 command.Connection = conn;
                 command.CommandText = "INSERT INTO pce_quiz(id, couple_id, status, created_at) VALUES (@id, @coupleId, @status, @createdAt)";
 
-                command.Parameters.AddWithValue("@id", quiz.Id);
-                command.Parameters.AddWithValue("@coupleId", quiz.CoupleId);
-                command.Parameters.AddWithValue("@status", quiz.Status);
-                command.Parameters.AddWithValue("@createdAt", quiz.CreatedAt);
+                command.Parameters.AddWithValue("@id", pce.Id);
+                command.Parameters.AddWithValue("@coupleId", pce.CoupleId);
+                command.Parameters.AddWithValue("@status", (int)pce.Status);
+                command.Parameters.AddWithValue("@createdAt", pce.CreatedAt);
 
                 await command.ExecuteNonQueryAsync(ct);
             }
