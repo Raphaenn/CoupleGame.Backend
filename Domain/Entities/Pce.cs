@@ -17,11 +17,11 @@ public class Pce
     public PceStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
 
-    private readonly List<Question> _premiumQuestionsList = new List<Question>();
-    public ReadOnlyCollection<Question> PremiumQuestions => _premiumQuestionsList.AsReadOnly();
+    private readonly List<Question> _pceQuestionsList = new List<Question>();
+    public ReadOnlyCollection<Question> PceQuestions => _pceQuestionsList.AsReadOnly();
 
-    private readonly List<PceAnswer> _premiumAnswers = new List<PceAnswer>();
-    public ReadOnlyCollection<PceAnswer> PremiumAnswers => _premiumAnswers.AsReadOnly();
+    private readonly List<PceAnswer> _pceAnswers = new List<PceAnswer>();
+    public ReadOnlyCollection<PceAnswer> PceAnswers => _pceAnswers.AsReadOnly();
     
     private Pce(Guid id, Guid coupleId, PceStatus status, DateTime createdAt)
     {
@@ -46,7 +46,7 @@ public class Pce
         if (question == null)
             throw new ArgumentNullException(nameof(question));
 
-        _premiumQuestionsList.Add(question);
+        _pceQuestionsList.Add(question);
     }
 
 }

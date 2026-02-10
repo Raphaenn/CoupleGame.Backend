@@ -17,12 +17,48 @@ public class CoupleController : ControllerBase
         _coupleAppService = coupleAppService;
     }
 
-    [HttpPost("start/")]
+    [HttpPost("start")]
     public async Task<ActionResult<CoupleDto?>> CreateCouple([FromBody] CoupleRequest coupleRequest)
     {
         try
         {
             CoupleDto response = await _coupleAppService.StartCouple(coupleRequest.UserOneId, coupleRequest.CoupleType, coupleRequest.CoupleStatus);
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    [HttpPost("create/temporary")]
+    public async Task<ActionResult<CoupleDto?>> CreateTempCouple([FromBody] CreateTemCoupleReq coupleRequest, CancellationToken ct)
+    {
+        try
+        {
+            if (coupleRequest.UserId1 is null)
+            {
+                throw new Exception("Invalid user");
+            }
+            CoupleDto response = await _coupleAppService.CreateTempCouple(coupleRequest.UserId1, ct);
+            return Ok(response);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+    
+    [HttpPost("search/temporary")]
+    public async Task<ActionResult<CoupleDto?>> GetTempCouple([FromBody] SearchTemCoupleReq coupleRequest)
+    {
+        try
+        {
+            if (coupleRequest.UserId1 is null || coupleRequest.UserId2 is null)
+            {
+                throw new Exception("Users");
+            }
+            CoupleDto response = await _coupleAppService.GetTempCouple(coupleRequest.UserId1, coupleRequest.UserId2);
             return Ok(response);
         }
         catch (Exception e)

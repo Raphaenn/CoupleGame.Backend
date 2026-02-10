@@ -4,7 +4,8 @@ public enum CoupleTypes
 {
     Friends,
     Dating,
-    Married
+    Married,
+    Temporary
 }
 
 public enum CoupleStatus
@@ -51,7 +52,7 @@ public class Couple
             throw new ArgumentException("Id cannot be empty");
 
         return new Couple(id, coupleOne, coupleTwo, type, status, createdAt);
-    } 
+    }
 
     public void AddMember(Guid userId)
     {

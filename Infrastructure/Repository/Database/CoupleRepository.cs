@@ -1,3 +1,4 @@
+using System.Data;
 using Domain.Entities;
 using Domain.Interfaces;
 using Infrastructure.Data.Connections;
@@ -8,6 +9,9 @@ namespace Infrastructure.Repository.Database;
 public class CoupleRepository : ICoupleRepository
 {
     private readonly PostgresConnection _postgresConnection;
+    
+    public static object DbValue<T>(T? value) where T : struct
+        => value.HasValue ? value.Value : DBNull.Value;
 
     public CoupleRepository(PostgresConnection postgresConnection)
     {
@@ -21,9 +25,13 @@ public class CoupleRepository : ICoupleRepository
             await using (var command = new NpgsqlCommand())
             {
                 command.Connection = conn;
-                command.CommandText = "INSERT INTO couple (id, couple_one, type, status, created_at) VALUES (@id, @coupleOne, @type, @status, @createdAt)";
+                command.CommandText = "INSERT INTO couple (id, couple_one, couple_two, type, status, created_at) VALUES (@id, @coupleOne, @coupleTwo, @type, @status, @createdAt)";
                 command.Parameters.AddWithValue("@id", couple.Id);
                 command.Parameters.AddWithValue("@coupleOne", couple.CoupleOne);
+                command.Parameters.AddWithValue(
+                    "@coupleTwo",
+                    DbValue(couple.CoupleTwo)
+                );
                 command.Parameters.AddWithValue("@type", couple.Type.ToString());
                 command.Parameters.AddWithValue("@status", couple.Status.ToString());
                 command.Parameters.AddWithValue("@createdAt", couple.CreatedAt);
@@ -154,6 +162,53 @@ public class CoupleRepository : ICoupleRepository
             }
         }
         return null;
+    }
+
+    public async Task<Couple?> SearchTemCouple(Guid userOneId, Guid userIdTwo)
+    {
+        await using (var conn = await _postgresConnection.DataSource.OpenConnectionAsync())
+        {
+            await using (var command = new NpgsqlCommand())
+            {
+                command.Connection = conn;
+                command.CommandText = "SELECT * FROM couple WHERE (couple_one = @coupleOne AND couple_two = @coupleTwo) OR (couple_one = @coupleTwo AND couple_two = @coupleOne) AND type = 'Temporary'";
+                command.Parameters.AddWithValue("@coupleOne", userOneId);
+                command.Parameters.AddWithValue("@coupleTwo", userIdTwo);
+
+                await using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow);
+                
+                if (!await reader.ReadAsync())
+                    return null;
+                
+                var ordId = reader.GetOrdinal("id");
+                var ordCouple1 = reader.GetOrdinal("couple_one");
+                var ordCouple2 = reader.GetOrdinal("couple_two");
+                var ordType = reader.GetOrdinal("type");
+                var ordStatus = reader.GetOrdinal("status");
+                var ordCreated = reader.GetOrdinal("created_at");
+
+                Guid id = reader.GetGuid(ordId);
+                Guid userOne = reader.GetGuid(ordCouple1);
+                Guid userTwo = reader.GetGuid(ordCouple2);
+                string type = reader.GetString(ordType);
+                string status = reader.GetString(ordStatus);
+                DateTime date = reader.GetDateTime(ordCreated);
+                
+                if (!Enum.TryParse(status, true, out CoupleStatus parsedStatus))
+                {
+                    parsedStatus = CoupleStatus.Active;
+                }
+                
+                if (!Enum.TryParse(type, true, out CoupleTypes parsedType))
+                {
+                    parsedType = CoupleTypes.Friends;
+                }
+
+                Couple couple = Couple.Rehydrate(id, userOne, userTwo, parsedType, parsedStatus, date);
+                return couple;
+
+            }
+        }
     }
 
     public async Task<Couple?> GetLongTermCouple(Guid userId)

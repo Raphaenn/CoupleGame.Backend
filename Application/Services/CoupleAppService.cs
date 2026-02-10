@@ -91,4 +91,47 @@ public class CoupleAppService : ICoupleAppService
         
         return parser;
     }
+    
+    public async Task<CoupleDto> CreateTempCouple(string userId, CancellationToken ct)
+    {
+        Guid parsedUserId1 = Guid.Parse(userId);
+
+        Couple coupleInstance = Couple.CreateCouple(parsedUserId1, CoupleTypes.Temporary, CoupleStatus.Active);
+        coupleInstance.AddMember(Guid.Parse("fec75dde-c2aa-4432-b5b4-73ddb0bd32ba"));
+
+        await _coupleRepository.StartNewCouple(coupleInstance);
+        CoupleDto response = new CoupleDto
+        {
+            Id = coupleInstance.Id.ToString(),
+            UserOneId = coupleInstance.CoupleOne.ToString(),
+            UserTwoId = coupleInstance.CoupleTwo.ToString(),
+            Status = coupleInstance.Status.ToString(),
+            Type = coupleInstance.Type.ToString()
+        };
+
+        return response;
+    }
+    
+    public async Task<CoupleDto> GetTempCouple(string userId, string userId2)
+    {
+        Guid parsedId1 = Guid.Parse(userId);
+        Guid parsedId2 = Guid.Parse(userId2);
+        Couple? couple = await _coupleRepository.SearchTemCouple(parsedId1, parsedId2);
+        
+        if (couple == null)
+        {
+            throw new ArgumentException("Wrong couple id");
+        }
+
+        CoupleDto parser = new CoupleDto
+        {
+            Id = couple.Id.ToString(),
+            UserOneId = couple.CoupleOne.ToString(),
+            UserTwoId = couple.CoupleTwo.ToString(),
+            Type = couple.Type.ToString(),
+            Status = couple.Status.ToString()
+        };
+        
+        return parser;
+    }
 }
