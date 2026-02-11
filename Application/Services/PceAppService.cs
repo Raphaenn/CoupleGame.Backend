@@ -20,11 +20,21 @@ public class PceAppService : IPceAppServices
         _coupleRepository = coupleRepository;
         _topicRepository = topicRepository;
     }
-
-    public async Task SaveAnswers(Guid userId, Guid quizId, Guid questionId, Guid topicId, string content, CancellationToken ct)
+    
+    public async Task<PceDto> InitNewPce(Guid coupleId, CancellationToken ct)
     {
-        PceAnswer answer = PceAnswer.StartAnswer(userId, quizId, questionId, topicId, content);
-        await _pceAnswersRepository.CreatePceAnswer(answer, ct);
+        // todo: check if already exists a valid pce
+        Pce pce = Pce.StartPce(coupleId);
+        await _pceRepository.CreatePce(pce, ct);
+        PceDto parsedPce = new PceDto
+        {
+            Id = pce.Id,
+            CoupleId = pce.CoupleId,
+            Status = pce.Status.ToString(),
+            CreatedAt = pce.CreatedAt
+        };
+
+        return parsedPce;
     }
 
     public async Task<PceDto?> GetPceByCouple(Guid coupleId, CancellationToken ct)
@@ -42,17 +52,31 @@ public class PceAppService : IPceAppServices
             CreatedAt = pce.CreatedAt
         };
     }
-
-    public async Task<List<PceResultDto>> GetPceResult(Guid coupleId, CancellationToken ct)
+    
+    public async Task SaveAnswers(Guid userId, Guid pceId, Guid questionId, Guid topicId, string content, CancellationToken ct)
     {
-        Pce? pce = await _pceRepository.GetPceByCouple(coupleId, ct);
+        Pce? pce = await _pceRepository.GetPceById(pceId, ct);
+        if (pce == null)
+        {
+            throw new Exception("Invalid pce");
+        }
+        PceAnswer answer = PceAnswer.StartAnswer(userId, pceId, questionId, topicId, content);
+        await _pceAnswersRepository.CreatePceAnswer(answer, ct);
+
+        pce.ChangeStatus(PceStatus.Active);
+        await _pceRepository.UpdatePceStatus(pce, ct);
+    }
+
+    public async Task<List<PceResultDto>> GetPceResult(Guid pceId, CancellationToken ct)
+    {
+        Pce? pce = await _pceRepository.GetPceById(pceId, ct);
 
         if (pce is null)
         {
             throw new NotFoundException("Pce no found to this couple id");
         }
         
-        Couple coupleData = await _coupleRepository.SearchCoupleById(coupleId);
+        Couple coupleData = await _coupleRepository.SearchCoupleById(pce.CoupleId);
 
         if (!coupleData.CoupleTwo.HasValue)
             throw new InvalidOperationException("Invalid couple");
@@ -126,11 +150,11 @@ public class PceAppService : IPceAppServices
 
         return pceResultDto;
     }
-
-    public async Task InitNewPce(Guid coupleId, CancellationToken ct)
+    
+    public async Task DeleteCompletePce(Guid pceId, CancellationToken ct)
     {
         // todo: check if already exists a valid pce
-        Pce pce = Pce.StartPce(coupleId);
-        await _pceRepository.CreatePce(pce, ct);
+        await _pceRepository.DeletePceAndData(pceId, ct);
     }
+
 }

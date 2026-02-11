@@ -49,4 +49,9 @@ public class Pce
         _pceQuestionsList.Add(question);
     }
 
+    public void ChangeStatus(PceStatus status)
+    {
+        Status = status;
+    }
+
 }

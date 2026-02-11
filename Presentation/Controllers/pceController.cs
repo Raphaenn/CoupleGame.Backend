@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers;
 
 [ApiController]
-[Route("/pce")]
+[Route("pce")]
 public class PceController : ControllerBase
 {
     private readonly IPceAppServices _pceAppServices;
@@ -21,12 +21,12 @@ public class PceController : ControllerBase
     }
 
     [HttpPost("init")]
-    public async Task<ActionResult> InitCouplePce([FromBody] InitiatePceReq req, CancellationToken ct)
+    public async Task<ActionResult<PceDto>> InitCouplePce([FromBody] InitiatePceReq req, CancellationToken ct)
     {
         try
         {
-            await _pceAppServices.InitNewPce(req.CoupleId, ct);
-            return NoContent();
+            PceDto res = await _pceAppServices.InitNewPce(req.CoupleId, ct);
+            return Ok(res);
         }
         catch (Exception e)
         {
@@ -48,12 +48,12 @@ public class PceController : ControllerBase
         }
     }
     
-    [HttpGet("pce-quiz/{id}")]
-    public async Task<ActionResult> GetPceQuiz([FromRoute] Guid id, CancellationToken ct)
+    [HttpGet("search-by-couple/{id}")]
+    public async Task<ActionResult<PceDto?>> GetPceQuiz([FromRoute] Guid id, CancellationToken ct)
     {
         try
         {
-            PceDto pce =  await _pceAppServices.GetPceByCouple(id, ct);
+            PceDto? pce =  await _pceAppServices.GetPceByCouple(id, ct);
             return Ok(pce);
         }
         catch (Exception e)
@@ -74,5 +74,21 @@ public class PceController : ControllerBase
         {
             return BadRequest(e.Message);
         }
+    }
+
+    [HttpDelete("complete-pce/{id}")]
+    public async Task<ActionResult> DeleteAllPceInformation(string id, CancellationToken ct)
+    {
+        try
+        {
+            Guid parsedId = Guid.Parse(id);
+            await _pceAppServices.DeleteCompletePce(parsedId, ct);
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+        
     }
 }

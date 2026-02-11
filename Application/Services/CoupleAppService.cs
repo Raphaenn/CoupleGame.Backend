@@ -97,7 +97,7 @@ public class CoupleAppService : ICoupleAppService
         Guid parsedUserId1 = Guid.Parse(userId);
 
         Couple coupleInstance = Couple.CreateCouple(parsedUserId1, CoupleTypes.Temporary, CoupleStatus.Active);
-        coupleInstance.AddMember(Guid.Parse("fec75dde-c2aa-4432-b5b4-73ddb0bd32ba"));
+        coupleInstance.AddMember(Guid.Parse("d2e275a4-dbb1-4e3b-909f-6a330a166685"));
 
         await _coupleRepository.StartNewCouple(coupleInstance);
         CoupleDto response = new CoupleDto
