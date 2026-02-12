@@ -76,7 +76,7 @@ public class PceController : ControllerBase
         }
     }
 
-    [HttpDelete("complete-pce/{id}")]
+    [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAllPceInformation(string id, CancellationToken ct)
     {
         try
