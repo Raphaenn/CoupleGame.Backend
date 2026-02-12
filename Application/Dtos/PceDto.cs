@@ -6,7 +6,7 @@ public class PceDto
 {
     public Guid Id { get; set; }
     public Guid CoupleId { get; set; }
-    public string Status { get; set; } = String.Empty;
+    public PceStatus Status { get; set; } = PceStatus.Pending;
     public DateTime CreatedAt { get; set; }
 }
 
@@ -23,6 +23,7 @@ public class PceResultDto
 public class PceQuestionAnswersDto
 {
     public Guid QuestionId { get; set; }
+    public string QuestionText { get; set; } = String.Empty;
     public List<PceAnswerDto> Answers { get; set; } = new();
 }
 

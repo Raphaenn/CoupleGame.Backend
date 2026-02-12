@@ -12,13 +12,15 @@ public class PceAppService : IPceAppServices
     private readonly IPceAnswersRepository _pceAnswersRepository;
     private readonly ICoupleRepository _coupleRepository;
     private readonly ITopicRepository _topicRepository;
+    private readonly IQuestionRepository _questionRepository;
 
-    public PceAppService(IPceAnswersRepository pceAnswersRepository, IPceRepository pceRepository, ICoupleRepository coupleRepository, ITopicRepository topicRepository)
+    public PceAppService(IPceAnswersRepository pceAnswersRepository, IPceRepository pceRepository, ICoupleRepository coupleRepository, ITopicRepository topicRepository, IQuestionRepository questionRepository)
     {
         _pceAnswersRepository = pceAnswersRepository;
         _pceRepository = pceRepository;
         _coupleRepository = coupleRepository;
         _topicRepository = topicRepository;
+        _questionRepository = questionRepository;
     }
     
     public async Task<PceDto> InitNewPce(Guid coupleId, CancellationToken ct)
@@ -30,7 +32,7 @@ public class PceAppService : IPceAppServices
         {
             Id = pce.Id,
             CoupleId = pce.CoupleId,
-            Status = pce.Status.ToString(),
+            Status = pce.Status,
             CreatedAt = pce.CreatedAt
         };
 
@@ -48,7 +50,7 @@ public class PceAppService : IPceAppServices
         {
             Id = pce.Id,
             CoupleId = pce.CoupleId,
-            Status = pce.Status.ToString(),
+            Status = pce.Status,
             CreatedAt = pce.CreatedAt
         };
     }
@@ -114,9 +116,9 @@ public class PceAppService : IPceAppServices
             if (!answersByTopic.TryGetValue(result.TopicId, out var topicAnswers))
                 continue;
 
-            foreach (var ta in topicAnswers)
+            foreach (var a in topicAnswers)
             {
-                result.AddPceAnswers(ta);
+                result.AddPceAnswers(a);
             }
         }
 
@@ -145,6 +147,11 @@ public class PceAppService : IPceAppServices
                     })
                     .ToList()
             };
+            foreach (var q in dto.Questions)
+            {
+                Question quest = await _questionRepository.GetSingleQuestion(q.QuestionId);
+                q.QuestionText = quest.QuestionText;
+            }
             pceResultDto.Add(dto);
         }
 
