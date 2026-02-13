@@ -11,11 +11,7 @@ variables:
   RESOURCE_GROUP: flags
 
 stages:
-  
-  # ===============================
-  # BUILD & PUSH
-  # ===============================
-  - stage: BuildAndPushj
+  - stage: BuildAndPush
     displayName: Build & Push
     jobs:
       - job: Build
@@ -34,10 +30,7 @@ stages:
               tags: |
                 $(Build.BuildId)
                 latest
-  
-  # ===============================
-  # DEPLOY
-  # ===============================
+
   - stage: Deploy
     displayName: Deploy to Azure Container Apps
     dependsOn: BuildAndPush
@@ -58,4 +51,3 @@ stages:
                   --name $(CONTAINER_APP_NAME) \
                   --resource-group $(RESOURCE_GROUP) \
                   --image $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(Build.BuildId)
-                echo "Deploy finished successfully!"
