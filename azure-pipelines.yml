@@ -1,5 +1,5 @@
 trigger:
-- main
+  - master   # troque para main se seu repo usa main
 
 pool:
   vmImage: ubuntu-latest
@@ -11,40 +11,51 @@ variables:
   RESOURCE_GROUP: flags
 
 stages:
-- stage: BuildAndPush
-  displayName: Build & Push
-  jobs:
-  - job: Build
-    steps:
-    - checkout: self
+  
+  # ===============================
+  # BUILD & PUSH
+  # ===============================
+  - stage: BuildAndPush
+    displayName: Build & Push
+    jobs:
+      - job: Build
+        displayName: Build Docker Image
+        steps:
+          - checkout: self
 
-    - task: Docker@2
-      displayName: Build & Push image
-      inputs:
-        command: buildAndPush
-        containerRegistry: 'flagsregistry-acr'
-        repository: $(IMAGE_NAME)
-        Dockerfile: 'Presentation/Dockerfile'
-        buildContext: '.' 
-        tags: |
-          $(Build.BuildId)
-          latest
-
-- stage: Deploy
-  displayName: Deploy to Container Apps
-  dependsOn: BuildAndPush
-  condition: succeeded()
-  jobs:
-  - job: Deploy
-    steps:
-    - task: AzureCLI@2
-      displayName: Update Container App image
-      inputs:
-        azureSubscription: 'flags-azure-rm'
-        scriptType: bash
-        scriptLocation: inlineScript
-        inlineScript: |
-          az containerapp update \
-            --name $(CONTAINER_APP_NAME) \
-            --resource-group $(RESOURCE_GROUP) \
-            --image $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(Build.BuildId)
+          - task: Docker@2
+            displayName: Build & Push image
+            inputs:
+              command: buildAndPush
+              containerRegistry: 'flagsregistry-acr'
+              repository: $(IMAGE_NAME)
+              Dockerfile: 'Presentation/Dockerfile'
+              buildContext: '.'
+              tags: |
+                $(Build.BuildId)
+                latest
+  
+  # ===============================
+  # DEPLOY
+  # ===============================
+  - stage: Deploy
+    displayName: Deploy to Azure Container Apps
+    dependsOn: BuildAndPush
+    condition: succeeded()
+    jobs:
+      - job: Deploy
+        displayName: Update Container App
+        steps:
+          - task: AzureCLI@2
+            displayName: Update Container App image
+            inputs:
+              azureSubscription: 'flags-azure-rm'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                echo "Updating Container App image..."
+                az containerapp update \
+                  --name $(CONTAINER_APP_NAME) \
+                  --resource-group $(RESOURCE_GROUP) \
+                  --image $(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(Build.BuildId)
+                echo "Deploy finished successfully!"
