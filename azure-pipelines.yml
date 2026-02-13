@@ -1,5 +1,5 @@
 trigger:
-  - master   # troque para main se seu repo usa main
+  - main   # troque para main se seu repo usa main
 
 pool:
   vmImage: ubuntu-latest
@@ -15,7 +15,7 @@ stages:
   # ===============================
   # BUILD & PUSH
   # ===============================
-  - stage: BuildAndPush
+  - stage: BuildAndPushj
     displayName: Build & Push
     jobs:
       - job: Build
